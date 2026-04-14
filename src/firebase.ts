@@ -3,13 +3,13 @@ import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCpvAlYDQbx6WdBRdh-PHOoNyf5IRQIag4",
-  authDomain: "fourseasons-runandmap.firebaseapp.com",
-  databaseURL: "https://fourseasons-runandmap-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "fourseasons-runandmap",
-  storageBucket: "fourseasons-runandmap.firebasestorage.app",
-  messagingSenderId: "738045125812",
-  appId: "1:738045125812:web:0a2b3a28819e35d6cae3e1"
+  apiKey: "AIzaSyAdgzqWGyzExAEYSFeiVBHW9eDwuzdldIc",
+  authDomain: "mugeum-daisy.firebaseapp.com",
+  databaseURL: "https://mugeum-daisy-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mugeum-daisy",
+  storageBucket: "mugeum-daisy.firebasestorage.app",
+  messagingSenderId: "760821868154",
+  appId: "1:760821868154:web:7bd7debd9bd50858cbbdc3",
 };
 
 const app = initializeApp(firebaseConfig);
