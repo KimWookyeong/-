@@ -14,7 +14,7 @@ import { auth, db } from "./firebase";
 import { onValue, push, ref, remove, update } from "firebase/database";
 
 const BG = "#fefce8";
-const GREEN = "#fbbf24";
+const GREEN = "#f4b321";
 const NAVY = "#92400e";
 const BORDER = "#fde68a";
 const LIGHT_TEXT = "#b2875f";
@@ -30,7 +30,7 @@ const ADMIN_CODE = "1234";
 const AREAS = ["물금읍", "증산리", "가촌리", "범어리", "기타 구역"];
 
 const CATEGORIES = [
-  { id: "cup", label: "일회용 컵", icon: "🥤", color: "#fbbf24" },
+  { id: "cup", label: "일회용 컵", icon: "🥤", color: "#f4b321" },
   { id: "smoke", label: "담배꽁초", icon: "🚬", color: "#78350f" },
   { id: "plastic", label: "플라스틱/비닐", icon: "🛍️", color: "#3b82f6" },
   { id: "bulky", label: "대형 폐기물", icon: "📦", color: "#4b5563" },
@@ -94,13 +94,14 @@ function MapSizeFixer() {
     const refresh = () => {
       try {
         map.invalidateSize(true);
-      } catch (e) {}
+        map.setView(map.getCenter(), map.getZoom(), { animate: false });
+      } catch {}
     };
 
     const t1 = setTimeout(refresh, 100);
-    const t2 = setTimeout(refresh, 400);
-    const t3 = setTimeout(refresh, 900);
-    const t4 = setTimeout(refresh, 1500);
+    const t2 = setTimeout(refresh, 500);
+    const t3 = setTimeout(refresh, 1000);
+    const t4 = setTimeout(refresh, 1800);
 
     window.addEventListener("resize", refresh);
 
@@ -140,12 +141,12 @@ function DaisyLetter({ letter }: { letter: string }) {
             rx="14"
             ry="28"
             fill="white"
-            stroke="#fbbf24"
+            stroke="#f4b321"
             strokeWidth="3"
             transform={`rotate(${angle} 50 50)`}
           />
         ))}
-        <circle cx="50" cy="50" r="20" fill="#fbbf24" stroke="#d97706" strokeWidth="2" />
+        <circle cx="50" cy="50" r="20" fill="#f4b321" stroke="#c98909" strokeWidth="2" />
       </svg>
       <span
         style={{
@@ -182,40 +183,20 @@ function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <filter id="daisyShadow" x="0" y="0" width="120" height="120" filterUnits="userSpaceOnUse">
-            <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#fbbf24" floodOpacity="0.22" />
-          </filter>
-        </defs>
-
-        <g filter="url(#daisyShadow)">
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-            <ellipse
-              key={angle}
-              cx="60"
-              cy="28"
-              rx="14"
-              ry="24"
-              fill="white"
-              stroke="#f4c542"
-              strokeWidth="3"
-              transform={`rotate(${angle} 60 60)`}
-            />
-          ))}
-          <circle cx="60" cy="60" r="16" fill="#fbbf24" stroke="#d97706" strokeWidth="3" />
-          <path
-            d="M59 76C57 84 51 90 45 95"
-            stroke="#8B5A2B"
-            strokeWidth="4"
-            strokeLinecap="round"
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <ellipse
+            key={angle}
+            cx="60"
+            cy="28"
+            rx="14"
+            ry="24"
+            fill="white"
+            stroke="#e5b233"
+            strokeWidth="3"
+            transform={`rotate(${angle} 60 60)`}
           />
-          <path
-            d="M60 79C66 82 72 88 75 95"
-            stroke="#8B5A2B"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-        </g>
+        ))}
+        <circle cx="60" cy="60" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
       </svg>
     </div>
   );
@@ -225,15 +206,15 @@ function DaisyHeaderFlower() {
   return (
     <div
       style={{
-        width: 28,
-        height: 28,
+        width: 24,
+        height: 24,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
       }}
     >
-      <svg width="28" height="28" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="24" height="24" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
           <ellipse
             key={angle}
@@ -242,12 +223,12 @@ function DaisyHeaderFlower() {
             rx="14"
             ry="24"
             fill="white"
-            stroke="#f4c542"
+            stroke="#e5b233"
             strokeWidth="6"
             transform={`rotate(${angle} 60 60)`}
           />
         ))}
-        <circle cx="60" cy="60" r="16" fill="#fbbf24" stroke="#d97706" strokeWidth="6" />
+        <circle cx="60" cy="60" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="6" />
       </svg>
     </div>
   );
@@ -1022,7 +1003,7 @@ export default function TrashMap() {
                     borderColor: formData.category === cat.id ? GREEN : "transparent",
                     boxShadow:
                       formData.category === cat.id
-                        ? "inset 0 0 0 1px rgba(251,191,36,0.25)"
+                        ? "inset 0 0 0 1px rgba(244,179,33,0.25)"
                         : "0 8px 18px rgba(0,0,0,0.04)",
                   }}
                 >
@@ -1079,6 +1060,7 @@ const globalCss = `
     width: 100%;
     height: 100%;
     background: #fefce8;
+    overflow: hidden;
   }
 
   .leaflet-container img,
@@ -1086,6 +1068,8 @@ const globalCss = `
   .leaflet-container .leaflet-marker-icon,
   .leaflet-container .leaflet-marker-shadow {
     max-width: none !important;
+    width: auto !important;
+    height: auto !important;
   }
 
   .leaflet-pane,
@@ -1146,7 +1130,7 @@ const styles: any = {
   },
   joinCardTitle: {
     textAlign: "center",
-    color: "#78350f",
+    color: NAVY,
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.04em",
@@ -1186,7 +1170,7 @@ const styles: any = {
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    boxShadow: "0 12px 24px rgba(251,191,36,0.22)",
+    boxShadow: "0 12px 24px rgba(244,179,33,0.22)",
     cursor: "pointer",
   },
   headerBar: {
@@ -1204,7 +1188,7 @@ const styles: any = {
     height: 40,
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
-    color: "#b45309",
+    color: NAVY,
     fontWeight: 800,
     display: "flex",
     alignItems: "center",
@@ -1217,7 +1201,7 @@ const styles: any = {
     height: 40,
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
-    color: "#b45309",
+    color: NAVY,
     fontWeight: 800,
     display: "flex",
     alignItems: "center",
@@ -1259,13 +1243,13 @@ const styles: any = {
     bottom: 86,
     transform: "translateX(-50%)",
     border: "none",
-    background: "#8c3f0b",
+    background: NAVY,
     color: "white",
     fontSize: 17,
     fontWeight: 900,
     padding: "18px 32px",
     borderRadius: 999,
-    boxShadow: "0 14px 28px rgba(120,53,15,0.22)",
+    boxShadow: "0 14px 28px rgba(146,64,14,0.22)",
     cursor: "pointer",
     zIndex: 500,
   },
@@ -1277,7 +1261,7 @@ const styles: any = {
     background: BG,
   },
   pageHeading: {
-    color: "#78350f",
+    color: NAVY,
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.03em",
@@ -1311,7 +1295,7 @@ const styles: any = {
     gap: 8,
     fontSize: 11,
     fontWeight: 900,
-    color: "#b45309",
+    color: NAVY,
     padding: "7px 10px",
     background: "#fff8dc",
     borderRadius: 999,
@@ -1374,11 +1358,11 @@ const styles: any = {
     cursor: "pointer",
   },
   totalBox: {
-    background: "#78350f",
+    background: NAVY,
     borderRadius: 40,
     padding: "34px 16px 24px",
     textAlign: "center",
-    boxShadow: "0 14px 28px rgba(120,53,15,0.18)",
+    boxShadow: "0 14px 28px rgba(146,64,14,0.18)",
     marginBottom: 18,
   },
   totalNumber: {
@@ -1426,7 +1410,7 @@ const styles: any = {
     marginBottom: 20,
   },
   categoryStatsTitle: {
-    color: "#78350f",
+    color: NAVY,
     fontWeight: 900,
     fontSize: 18,
     marginBottom: 14,
@@ -1461,7 +1445,7 @@ const styles: any = {
     boxShadow: "0 8px 16px rgba(0,0,0,0.10)",
   },
   categoryStatLabel: {
-    color: "#78350f",
+    color: NAVY,
     fontSize: 12,
     fontWeight: 800,
     marginBottom: 6,
@@ -1556,7 +1540,7 @@ const styles: any = {
     marginBottom: 14,
   },
   sheetTitle: {
-    color: "#78350f",
+    color: NAVY,
     fontWeight: 900,
     fontSize: 20,
     letterSpacing: "-0.03em",
@@ -1594,14 +1578,14 @@ const styles: any = {
     height: 84,
     border: "none",
     borderRadius: 22,
-    background: "#78350f",
+    background: NAVY,
     color: "white",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
-    boxShadow: "0 8px 18px rgba(120,53,15,0.18)",
+    boxShadow: "0 8px 18px rgba(146,64,14,0.18)",
     cursor: "pointer",
   },
   actionCardLabelWhite: {
@@ -1666,7 +1650,7 @@ const styles: any = {
     padding: "14px 14px",
     fontSize: 15,
     fontWeight: 800,
-    color: "#78350f",
+    color: NAVY,
     marginBottom: 12,
     outline: "none",
   },
@@ -1688,7 +1672,7 @@ const styles: any = {
     cursor: "pointer",
   },
   categoryCardText: {
-    color: "#78350f",
+    color: NAVY,
     fontSize: 12,
     fontWeight: 900,
   },
@@ -1700,7 +1684,7 @@ const styles: any = {
     background: "white",
     padding: "16px 14px",
     fontSize: 15,
-    color: "#78350f",
+    color: NAVY,
     resize: "none",
     outline: "none",
     marginBottom: 14,
@@ -1715,14 +1699,14 @@ const styles: any = {
     borderRadius: 24,
     padding: "20px 16px",
     cursor: "pointer",
-    boxShadow: "0 14px 24px rgba(251,191,36,0.20)",
+    boxShadow: "0 14px 24px rgba(244,179,33,0.20)",
   },
   toast: {
     position: "fixed",
     top: 14,
     left: "50%",
     transform: "translateX(-50%)",
-    background: "#78350f",
+    background: NAVY,
     color: "white",
     padding: "10px 18px",
     borderRadius: 14,
