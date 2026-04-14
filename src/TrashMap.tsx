@@ -91,7 +91,11 @@ function MapSizeFixer() {
   const map = useMap();
 
   useEffect(() => {
-    const refresh = () => map.invalidateSize();
+    const refresh = () => {
+      try {
+        map.invalidateSize(true);
+      } catch (e) {}
+    };
 
     const t1 = setTimeout(refresh, 100);
     const t2 = setTimeout(refresh, 400);
@@ -159,75 +163,91 @@ function DaisyLetter({ letter }: { letter: string }) {
   );
 }
 
-function DaisyLogo({ size = 64 }: { size?: number }) {
+function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "4px 0 6px" }}>
-      <div
-        style={{
-          width: size,
-          height: size,
-          borderRadius: 20,
-          background: "#fbbf24",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 8px 20px rgba(246,191,31,0.20)",
-          transform: "rotate(-4deg)",
-          flexShrink: 0,
-        }}
+    <div
+      style={{
+        width: size,
+        height: size,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 4,
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 120 120"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <svg
-          width={size * 0.44}
-          height={size * 0.44}
-          viewBox="0 0 64 64"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ transform: "rotate(4deg)" }}
-        >
+        <defs>
+          <filter id="daisyShadow" x="0" y="0" width="120" height="120" filterUnits="userSpaceOnUse">
+            <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#fbbf24" floodOpacity="0.22" />
+          </filter>
+        </defs>
+
+        <g filter="url(#daisyShadow)">
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+            <ellipse
+              key={angle}
+              cx="60"
+              cy="28"
+              rx="14"
+              ry="24"
+              fill="white"
+              stroke="#f4c542"
+              strokeWidth="3"
+              transform={`rotate(${angle} 60 60)`}
+            />
+          ))}
+          <circle cx="60" cy="60" r="16" fill="#fbbf24" stroke="#d97706" strokeWidth="3" />
           <path
-            d="M32 22C29 16 22 13 18 16C14 19 15 27 21 31C16 31 11 35 11 40C11 45 16 48 22 46C23 52 27 56 32 56C37 56 41 52 42 46C48 48 53 45 53 40C53 35 48 31 43 31C49 27 50 19 46 16C42 13 35 16 32 22Z"
-            fill="white"
+            d="M59 76C57 84 51 90 45 95"
+            stroke="#8B5A2B"
+            strokeWidth="4"
+            strokeLinecap="round"
           />
-          <circle cx="32" cy="34" r="4.5" fill="#fbbf24" />
-          <path d="M31.5 40C30 44 27 47 24 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
-          <path d="M31.5 42C35 43 38 46 40 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
-        </svg>
-      </div>
+          <path
+            d="M60 79C66 82 72 88 75 95"
+            stroke="#8B5A2B"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
     </div>
   );
 }
 
-function DaisyHeaderLogo() {
+function DaisyHeaderFlower() {
   return (
     <div
       style={{
-        width: 34,
-        height: 34,
-        borderRadius: 12,
-        background: GREEN,
+        width: 28,
+        height: 28,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 6px 16px rgba(246,191,31,0.20)",
-        transform: "rotate(-4deg)",
         flexShrink: 0,
       }}
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ transform: "rotate(4deg)" }}
-      >
-        <path
-          d="M32 22C29 16 22 13 18 16C14 19 15 27 21 31C16 31 11 35 11 40C11 45 16 48 22 46C23 52 27 56 32 56C37 56 41 52 42 46C48 48 53 45 53 40C53 35 48 31 43 31C49 27 50 19 46 16C42 13 35 16 32 22Z"
-          fill="white"
-        />
-        <circle cx="32" cy="34" r="4.5" fill="#fbbf24" />
-        <path d="M31.5 40C30 44 27 47 24 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
-        <path d="M31.5 42C35 43 38 46 40 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
+      <svg width="28" height="28" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <ellipse
+            key={angle}
+            cx="60"
+            cy="28"
+            rx="14"
+            ry="24"
+            fill="white"
+            stroke="#f4c542"
+            strokeWidth="6"
+            transform={`rotate(${angle} 60 60)`}
+          />
+        ))}
+        <circle cx="60" cy="60" r="16" fill="#fbbf24" stroke="#d97706" strokeWidth="6" />
       </svg>
     </div>
   );
@@ -314,8 +334,8 @@ function Header({
 }) {
   return (
     <header style={styles.headerBar}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <DaisyHeaderLogo />
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <DaisyHeaderFlower />
         <div style={{ fontSize: 20, fontWeight: 900, color: NAVY, letterSpacing: "-0.02em" }}>
           물금동아
         </div>
@@ -675,7 +695,7 @@ export default function TrashMap() {
         {message ? <div style={styles.toast}>{message}</div> : null}
 
         <div style={styles.joinWrap}>
-          <DaisyLogo size={64} />
+          <DaisyFlowerOnly size={84} />
           <div style={styles.joinTitle}>물금동아</div>
 
           <div
@@ -743,7 +763,13 @@ export default function TrashMap() {
       <main style={styles.mainArea}>
         {activeTab === "map" && (
           <div style={styles.mapPage}>
-            <MapContainer center={DEFAULT_CENTER} zoom={14} style={styles.mapContainer} preferCanvas={true}>
+            <MapContainer
+              key={`main-map-${activeTab}`}
+              center={DEFAULT_CENTER}
+              zoom={14}
+              style={styles.mapContainer}
+              preferCanvas={true}
+            >
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -765,7 +791,9 @@ export default function TrashMap() {
                       </div>
                       <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
                       <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
-                      <div style={{ fontSize: 13 }}>상태: {report.status === "solved" ? "해결됨" : "진행중"}</div>
+                      <div style={{ fontSize: 13 }}>
+                        상태: {report.status === "solved" ? "해결됨" : "진행중"}
+                      </div>
                       <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
                     </div>
                   </Popup>
@@ -1038,13 +1066,35 @@ const globalCss = `
     font-family: Arial, sans-serif;
     background: ${BG};
   }
-  * { box-sizing: border-box; }
-  button, input, textarea, select { font: inherit; }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+  }
+
   .leaflet-container {
     width: 100%;
     height: 100%;
     background: #fefce8;
   }
+
+  .leaflet-container img,
+  .leaflet-container .leaflet-tile,
+  .leaflet-container .leaflet-marker-icon,
+  .leaflet-container .leaflet-marker-shadow {
+    max-width: none !important;
+  }
+
+  .leaflet-pane,
+  .leaflet-tile,
+  .leaflet-marker-icon,
+  .leaflet-marker-shadow {
+    will-change: transform;
+  }
+
   .trash-map-marker,
   .trash-map-picker {
     background: transparent !important;
@@ -1080,7 +1130,7 @@ const styles: any = {
     fontWeight: 900,
     color: NAVY,
     letterSpacing: "-0.04em",
-    marginTop: 2,
+    marginTop: 0,
     marginBottom: 6,
     lineHeight: 1.1,
   },
@@ -1201,6 +1251,7 @@ const styles: any = {
   mapContainer: {
     width: "100%",
     height: "100%",
+    minHeight: "100%",
   },
   recordFab: {
     position: "absolute",
