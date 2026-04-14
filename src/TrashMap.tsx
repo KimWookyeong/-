@@ -1,36 +1,40 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import { onAuthStateChanged, signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { onValue, push, ref, remove, update } from "firebase/database";
 
-const BG = "#edf8f1";
-const GREEN = "#19c37d";
-const NAVY = "#162544";
-const BORDER = "#d7eee1";
-const LIGHT_TEXT = "#9aa7b6";
+const BG = "#fefce8";
+const GREEN = "#fbbf24";
+const NAVY = "#92400e";
+const BORDER = "#fde68a";
+const LIGHT_TEXT = "#b2875f";
 
-const NAME_KEY = "four_seasons_run_map_name_v7";
-const DEFAULT_CENTER: [number, number] = [35.243, 129.092];
+const NAME_KEY = "mulgeum_daisy_name_v1";
+const ADMIN_KEY = "mulgeum_daisy_admin_code_v1";
+const REPORTS_PATH = "mulgeum_daisy_reports";
+
+const DEFAULT_CENTER: [number, number] = [35.327, 129.007];
 const ADMIN_NAME = "admin";
 const ADMIN_CODE = "1234";
 
-const AREAS = [
-  "부산대/장전동",
-  "온천천/부곡동",
-  "구서/남산동",
-  "금사/서동",
-  "금정산/노포동",
-];
+const AREAS = ["물금읍", "증산리", "가촌리", "범어리", "기타 구역"];
 
 const CATEGORIES = [
-  { id: "cup", label: "일회용 컵", icon: "🥤", color: "#19c37d" },
-  { id: "smoke", label: "담배꽁초", icon: "🚬", color: "#f59e0b" },
+  { id: "cup", label: "일회용 컵", icon: "🥤", color: "#fbbf24" },
+  { id: "smoke", label: "담배꽁초", icon: "🚬", color: "#78350f" },
   { id: "plastic", label: "플라스틱/비닐", icon: "🛍️", color: "#3b82f6" },
-  { id: "bulky", label: "대형 폐기물", icon: "📦", color: "#8b5cf6" },
-  { id: "etc", label: "기타 쓰레기", icon: "❓", color: "#64748b" },
+  { id: "bulky", label: "대형 폐기물", icon: "📦", color: "#4b5563" },
+  { id: "etc", label: "기타 쓰레기", icon: "❓", color: "#9ca3af" },
 ];
 
 function getCategory(categoryId: string) {
@@ -83,55 +87,148 @@ function makePickerIcon() {
   });
 }
 
-function ShieldLogo() {
+function MapSizeFixer() {
+  const map = useMap();
+
+  useEffect(() => {
+    const run = () => map.invalidateSize();
+
+    const t1 = setTimeout(run, 100);
+    const t2 = setTimeout(run, 400);
+    const t3 = setTimeout(run, 900);
+    const t4 = setTimeout(run, 1500);
+
+    const onResize = () => map.invalidateSize();
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [map]);
+
+  return null;
+}
+
+function DaisyLetter({ letter }: { letter: string }) {
   return (
     <div
       style={{
-        width: 38,
-        height: 38,
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 32,
+        height: 32,
+        margin: "0 1px",
+        verticalAlign: "middle",
+        flexShrink: 0,
+      }}
+    >
+      <svg viewBox="0 0 100 100" style={{ position: "absolute", width: "100%", height: "100%" }}>
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <ellipse
+            key={angle}
+            cx="50"
+            cy="25"
+            rx="14"
+            ry="28"
+            fill="white"
+            stroke="#fbbf24"
+            strokeWidth="3"
+            transform={`rotate(${angle} 50 50)`}
+          />
+        ))}
+        <circle cx="50" cy="50" r="20" fill="#fbbf24" stroke="#d97706" strokeWidth="2" />
+      </svg>
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+          fontWeight: 900,
+          fontSize: 13,
+          color: "#451a03",
+          marginTop: 1,
+        }}
+      >
+        {letter}
+      </span>
+    </div>
+  );
+}
+
+function DaisyLogo({ size = 64 }: { size?: number }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "4px 0 6px" }}>
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 20,
+          background: "#fbbf24",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 8px 20px rgba(246,191,31,0.20)",
+          transform: "rotate(-4deg)",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width={size * 0.44}
+          height={size * 0.44}
+          viewBox="0 0 64 64"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ transform: "rotate(4deg)" }}
+        >
+          <path
+            d="M32 22C29 16 22 13 18 16C14 19 15 27 21 31C16 31 11 35 11 40C11 45 16 48 22 46C23 52 27 56 32 56C37 56 41 52 42 46C48 48 53 45 53 40C53 35 48 31 43 31C49 27 50 19 46 16C42 13 35 16 32 22Z"
+            fill="white"
+          />
+          <circle cx="32" cy="34" r="4.5" fill="#fbbf24" />
+          <path d="M31.5 40C30 44 27 47 24 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
+          <path d="M31.5 42C35 43 38 46 40 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function DaisyHeaderLogo() {
+  return (
+    <div
+      style={{
+        width: 34,
+        height: 34,
         borderRadius: 12,
         background: GREEN,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 4px 12px rgba(25,195,125,0.22)",
+        boxShadow: "0 6px 16px rgba(246,191,31,0.20)",
+        transform: "rotate(-4deg)",
+        flexShrink: 0,
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ transform: "rotate(4deg)" }}
+      >
         <path
-          d="M12 2L19 5V11C19 16 15.8 20.4 12 22C8.2 20.4 5 16 5 11V5L12 2Z"
-          stroke="white"
-          strokeWidth="2"
+          d="M32 22C29 16 22 13 18 16C14 19 15 27 21 31C16 31 11 35 11 40C11 45 16 48 22 46C23 52 27 56 32 56C37 56 41 52 42 46C48 48 53 45 53 40C53 35 48 31 43 31C49 27 50 19 46 16C42 13 35 16 32 22Z"
+          fill="white"
         />
-        <path
-          d="M9.2 12.1L11 13.9L14.8 10.1"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function CloverLogo({ size = 86 }: { size?: number }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "8px 0 8px" }}>
-      <svg width={size} height={size} viewBox="0 0 100 100" fill="none">
-        <g transform="translate(50,50)">
-          {[0, 90, 180, 270].map((angle) => (
-            <path
-              key={angle}
-              d="M0 0C-16 -24 -34 -14 -34 0C-34 14 -16 24 0 0ZM0 0C16 -24 34 -14 34 0C34 14 16 24 0 0Z"
-              fill={GREEN}
-              stroke="#0d5d45"
-              strokeWidth="2"
-              transform={`rotate(${angle})`}
-            />
-          ))}
-        </g>
-        <circle cx="50" cy="50" r="8" fill="white" opacity="0.45" />
+        <circle cx="32" cy="34" r="4.5" fill="#fbbf24" />
+        <path d="M31.5 40C30 44 27 47 24 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <path d="M31.5 42C35 43 38 46 40 49" stroke="white" strokeWidth="3" strokeLinecap="round" />
       </svg>
     </div>
   );
@@ -142,10 +239,10 @@ function MapNavIcon({ active }: { active: boolean }) {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M12 21C16 16.7 18 13.5 18 10.5C18 6.9 15.3 4 12 4C8.7 4 6 6.9 6 10.5C6 13.5 8 16.7 12 21Z"
-        stroke={active ? GREEN : "#b7c0ce"}
+        stroke={active ? GREEN : "#c7cbd3"}
         strokeWidth="2.2"
       />
-      <circle cx="12" cy="10" r="2.4" fill={active ? GREEN : "#b7c0ce"} />
+      <circle cx="12" cy="10" r="2.4" fill={active ? GREEN : "#c7cbd3"} />
     </svg>
   );
 }
@@ -153,12 +250,12 @@ function MapNavIcon({ active }: { active: boolean }) {
 function ListNavIcon({ active }: { active: boolean }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <circle cx="6" cy="7" r="1.5" fill={active ? GREEN : "#b7c0ce"} />
-      <circle cx="6" cy="12" r="1.5" fill={active ? GREEN : "#b7c0ce"} />
-      <circle cx="6" cy="17" r="1.5" fill={active ? GREEN : "#b7c0ce"} />
+      <circle cx="6" cy="7" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
+      <circle cx="6" cy="12" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
+      <circle cx="6" cy="17" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
       <path
         d="M10 7H18M10 12H18M10 17H18"
-        stroke={active ? GREEN : "#b7c0ce"}
+        stroke={active ? GREEN : "#c7cbd3"}
         strokeWidth="2.2"
         strokeLinecap="round"
       />
@@ -171,13 +268,13 @@ function StatsNavIcon({ active }: { active: boolean }) {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path
         d="M5 19V11M10 19V6M15 19V13M20 19V9"
-        stroke={active ? GREEN : "#b7c0ce"}
+        stroke={active ? GREEN : "#c7cbd3"}
         strokeWidth="2.2"
         strokeLinecap="round"
       />
       <path
         d="M3 19H22"
-        stroke={active ? GREEN : "#b7c0ce"}
+        stroke={active ? GREEN : "#c7cbd3"}
         strokeWidth="2.2"
         strokeLinecap="round"
       />
@@ -219,9 +316,9 @@ function Header({
   return (
     <header style={styles.headerBar}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <ShieldLogo />
+        <DaisyHeaderLogo />
         <div style={{ fontSize: 20, fontWeight: 900, color: NAVY, letterSpacing: "-0.02em" }}>
-          FOUR SEASONS
+          물금동아
         </div>
       </div>
 
@@ -231,12 +328,12 @@ function Header({
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M10 7L15 12L10 17"
-              stroke="#b8c1cf"
+              stroke="#c1b7ab"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <path d="M15 12H4" stroke="#b8c1cf" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M15 12H4" stroke="#c1b7ab" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
         </button>
       </div>
@@ -262,7 +359,7 @@ function BottomNav({
       {items.map((item) => (
         <button key={item.key} onClick={() => setActiveTab(item.key)} style={styles.navItemButton}>
           {item.icon}
-          <span style={{ ...styles.navLabel, color: activeTab === item.key ? GREEN : "#c2cad7" }}>
+          <span style={{ ...styles.navLabel, color: activeTab === item.key ? GREEN : "#c7cbd3" }}>
             {item.label}
           </span>
         </button>
@@ -275,7 +372,7 @@ export default function TrashMap() {
   const [nickname, setNickname] = useState("");
   const [nicknameInput, setNicknameInput] = useState("");
   const [adminCode, setAdminCode] = useState("");
-  const [savedAdminCode, setSavedAdminCode] = useState(localStorage.getItem("four_seasons_admin_code") || "");
+  const [savedAdminCode, setSavedAdminCode] = useState(localStorage.getItem(ADMIN_KEY) || "");
   const [user, setUser] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("map");
@@ -315,7 +412,7 @@ export default function TrashMap() {
   }, []);
 
   useEffect(() => {
-    const reportsRef = ref(db, "reports");
+    const reportsRef = ref(db, REPORTS_PATH);
     const unsub = onValue(
       reportsRef,
       (snapshot) => {
@@ -391,7 +488,7 @@ export default function TrashMap() {
     const value = nicknameInput.trim();
 
     if (!value) {
-      setMessage("닉네임을 입력해 주세요.");
+      setMessage("학번과 이름을 입력해 주세요.");
       return;
     }
 
@@ -401,7 +498,7 @@ export default function TrashMap() {
     }
 
     localStorage.setItem(NAME_KEY, value);
-    localStorage.setItem("four_seasons_admin_code", adminCode);
+    localStorage.setItem(ADMIN_KEY, adminCode);
     setNickname(value);
     setSavedAdminCode(adminCode);
     setMessage("입장 완료");
@@ -409,17 +506,19 @@ export default function TrashMap() {
 
   const handleLogout = async () => {
     localStorage.removeItem(NAME_KEY);
-    localStorage.removeItem("four_seasons_admin_code");
+    localStorage.removeItem(ADMIN_KEY);
     setNickname("");
     setNicknameInput("");
     setAdminCode("");
     setSavedAdminCode("");
     setShowAddSheet(false);
+
     try {
       await signOut(auth);
     } catch (error) {
       console.error(error);
     }
+
     setMessage("로그아웃 되었습니다.");
   };
 
@@ -466,7 +565,7 @@ export default function TrashMap() {
 
   const handleSave = async () => {
     if (!nickname) {
-      setMessage("닉네임이 필요합니다.");
+      setMessage("학번과 이름이 필요합니다.");
       return;
     }
 
@@ -493,7 +592,7 @@ export default function TrashMap() {
     };
 
     try {
-      await push(ref(db, "reports"), reportData);
+      await push(ref(db, REPORTS_PATH), reportData);
       resetForm();
       setShowAddSheet(false);
       setActiveTab("map");
@@ -503,7 +602,7 @@ export default function TrashMap() {
 
       if (formData.image) {
         try {
-          await push(ref(db, "reports"), {
+          await push(ref(db, REPORTS_PATH), {
             ...reportData,
             image: "",
           });
@@ -526,7 +625,7 @@ export default function TrashMap() {
     if (!ok) return;
 
     try {
-      await remove(ref(db, `reports/${id}`));
+      await remove(ref(db, `${REPORTS_PATH}/${id}`));
       setMessage("삭제되었습니다.");
     } catch (error) {
       console.error(error);
@@ -547,7 +646,7 @@ export default function TrashMap() {
     const nextStatus = report.status === "pending" ? "solved" : "pending";
 
     try {
-      await update(ref(db, `reports/${report.id}`), {
+      await update(ref(db, `${REPORTS_PATH}/${report.id}`), {
         status: nextStatus,
       });
       setMessage(nextStatus === "solved" ? "해결됨으로 변경되었습니다." : "진행중으로 변경되었습니다.");
@@ -562,7 +661,7 @@ export default function TrashMap() {
     if (!ok) return;
 
     try {
-      await remove(ref(db, "reports"));
+      await remove(ref(db, REPORTS_PATH));
       setMessage("전체 데이터가 초기화되었습니다.");
     } catch (error) {
       console.error(error);
@@ -574,24 +673,47 @@ export default function TrashMap() {
     return (
       <div style={styles.joinScreen}>
         <style>{globalCss}</style>
+        {message ? <div style={styles.toast}>{message}</div> : null}
+
         <div style={styles.joinWrap}>
-          <CloverLogo size={86} />
-          <div style={styles.joinTitle}>FOUR SEASONS</div>
-          <div style={styles.joinCaption}>금정구의 사계절을 기록하고 함께 지켜나가요</div>
+          <DaisyLogo size={64} />
+          <div style={styles.joinTitle}>물금동아</div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              whiteSpace: "nowrap",
+              overflow: "visible",
+              marginTop: 4,
+              marginBottom: 18,
+              padding: "0 8px",
+              flexWrap: "nowrap",
+            }}
+          >
+            <DaisyLetter letter="데" />
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>이터를</span>
+            <DaisyLetter letter="이" />
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>용한</span>
+            <DaisyLetter letter="지" />
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>역 쓰레기 해결</span>
+          </div>
 
           <div style={styles.joinCard}>
-            <div style={styles.joinCardTitle}>활동가 합류</div>
+            <div style={styles.joinCardTitle}>반가워요 활동가님!</div>
             <div style={styles.joinCardSub}>
-              실시간 환경 지도 활동을 위해
+              실시간 지도에 합류하기 위해
               <br />
-              닉네임을 입력해 주세요.
+              학번과 이름을 입력해 주세요.
             </div>
 
             <form onSubmit={handleJoin}>
               <input
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
-                placeholder="닉네임 (예: 금정_철수)"
+                placeholder="예: 30101_홍길동"
                 style={styles.joinInput}
               />
               <input
@@ -602,7 +724,7 @@ export default function TrashMap() {
                 style={styles.joinInput}
               />
               <button type="submit" style={styles.joinButton}>
-                지도 합류하기
+                프로젝트 합류하기
                 <span style={{ fontSize: 24, lineHeight: 0, opacity: 0.95 }}>›</span>
               </button>
             </form>
@@ -622,36 +744,40 @@ export default function TrashMap() {
       <main style={styles.mainArea}>
         {activeTab === "map" && (
           <div style={styles.mapPage}>
-            <div style={styles.fullMapWrap}>
-              <MapContainer center={DEFAULT_CENTER} zoom={14} style={{ width: "100%", height: "100%" }}>
-                <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+            <MapContainer
+              center={DEFAULT_CENTER}
+              zoom={14}
+              style={styles.mapContainer}
+              preferCanvas={true}
+            >
+              <TileLayer
+                attribution="&copy; OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapSizeFixer />
 
-                {reports.map((report) => (
-                  <Marker
-                    key={report.id}
-                    position={[report.location.lat, report.location.lng]}
-                    icon={makeMarkerIcon(report.category)}
-                  >
-                    <Popup>
-                      <div style={{ minWidth: 160 }}>
-                        <div>
-                          <strong>
-                            {getCategory(report.category).icon} {getCategory(report.category).label}
-                          </strong>
-                        </div>
-                        <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
-                        <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
-                        <div style={{ fontSize: 13 }}>상태: {report.status === "solved" ? "해결됨" : "진행중"}</div>
-                        <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
+              {reports.map((report) => (
+                <Marker
+                  key={report.id}
+                  position={[report.location.lat, report.location.lng]}
+                  icon={makeMarkerIcon(report.category)}
+                >
+                  <Popup>
+                    <div style={{ minWidth: 160 }}>
+                      <div>
+                        <strong>
+                          {getCategory(report.category).icon} {getCategory(report.category).label}
+                        </strong>
                       </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
+                      <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
+                      <div style={{ fontSize: 13 }}>상태: {report.status === "solved" ? "해결됨" : "진행중"}</div>
+                      <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
 
             <button style={styles.recordFab} onClick={() => setShowAddSheet(true)}>
               기록하기 +
@@ -661,7 +787,7 @@ export default function TrashMap() {
 
         {activeTab === "list" && (
           <div style={styles.pageWrap}>
-            <div style={styles.pageHeading}>ACTIVITY FEED</div>
+            <div style={styles.pageHeading}>TEAM ARCHIVE</div>
 
             {reports.length === 0 ? (
               <div style={styles.emptyFeed}>아직 활동 기록이 없습니다.</div>
@@ -679,8 +805,7 @@ export default function TrashMap() {
                 const statusButtonStyle =
                   report.status === "solved" ? styles.statusSolved : styles.statusPending;
 
-                const statusLabel =
-                  report.status === "solved" ? "해결됨 ✓" : "진행중";
+                const statusLabel = report.status === "solved" ? "해결됨 ✓" : "진행중";
 
                 return (
                   <div key={report.id} style={styles.feedCard}>
@@ -712,7 +837,7 @@ export default function TrashMap() {
                           삭제
                         </button>
                       ) : (
-                        <div style={{ color: "#ccd4dd", fontSize: 11, fontWeight: 800 }}>읽기 전용</div>
+                        <div style={{ color: "#d8cfc5", fontSize: 11, fontWeight: 800 }}>읽기 전용</div>
                       )}
                     </div>
                   </div>
@@ -769,7 +894,7 @@ export default function TrashMap() {
                 <div style={styles.adminDesc}>
                   모든 사용자의 피드를 삭제할 수 있으며, 전체 초기화도 가능합니다.
                   <br />
-                  (삭제된 데이터는 복구가 불가합니다)
+                  삭제된 데이터는 복구할 수 없습니다.
                 </div>
                 <button onClick={handleClearAll} style={styles.adminButton}>
                   데이터 전체 초기화
@@ -804,6 +929,7 @@ export default function TrashMap() {
                   attribution="&copy; OpenStreetMap contributors"
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                <MapSizeFixer />
                 <ClickLocationPicker
                   selectedLocation={formData.location}
                   onChange={(loc) => setFormData((prev) => ({ ...prev, location: loc }))}
@@ -875,7 +1001,7 @@ export default function TrashMap() {
                     borderColor: formData.category === cat.id ? GREEN : "transparent",
                     boxShadow:
                       formData.category === cat.id
-                        ? "inset 0 0 0 1px rgba(25,195,125,0.25)"
+                        ? "inset 0 0 0 1px rgba(251,191,36,0.25)"
                         : "0 8px 18px rgba(0,0,0,0.04)",
                   }}
                 >
@@ -921,13 +1047,22 @@ const globalCss = `
   }
   * { box-sizing: border-box; }
   button, input, textarea, select { font: inherit; }
-  .leaflet-container { width: 100%; height: 100%; }
+  .leaflet-container {
+    width: 100%;
+    height: 100%;
+    background: #fefce8;
+  }
+  .trash-map-marker,
+  .trash-map-picker {
+    background: transparent !important;
+    border: none !important;
+  }
 `;
 
 const styles: any = {
   appShell: {
     width: "100%",
-    height: "100%",
+    height: "100vh",
     background: BG,
     display: "flex",
     flexDirection: "column",
@@ -935,7 +1070,7 @@ const styles: any = {
   },
   joinScreen: {
     width: "100%",
-    height: "100%",
+    height: "100vh",
     background: BG,
     overflowY: "auto",
   },
@@ -948,39 +1083,27 @@ const styles: any = {
     padding: "24px 16px 36px",
   },
   joinTitle: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: 900,
     color: NAVY,
     letterSpacing: "-0.04em",
-    marginTop: 4,
-  },
-  joinCaption: {
-    marginTop: 12,
-    background: "white",
-    color: "#1fa574",
-    fontSize: 11,
-    fontWeight: 800,
-    borderRadius: 999,
-    padding: "8px 14px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
-    border: `1px solid ${BORDER}`,
-    textAlign: "center",
-    whiteSpace: "nowrap",
-    letterSpacing: "-0.02em",
+    marginTop: 2,
+    marginBottom: 6,
+    lineHeight: 1.1,
   },
   joinCard: {
     width: "100%",
     maxWidth: 640,
     background: "white",
-    borderRadius: 30,
-    marginTop: 28,
+    borderRadius: 40,
+    marginTop: 10,
     padding: "32px 24px 24px",
     boxShadow: "0 18px 36px rgba(0,0,0,0.08)",
     border: `1px solid ${BORDER}`,
   },
   joinCardTitle: {
     textAlign: "center",
-    color: NAVY,
+    color: "#78350f",
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.04em",
@@ -996,13 +1119,13 @@ const styles: any = {
   },
   joinInput: {
     width: "100%",
-    background: "#f3f5f8",
-    border: "1px solid #e8edf3",
+    background: BG,
+    border: `2px solid ${BORDER}`,
     borderRadius: 22,
     padding: "18px 14px",
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 800,
-    color: "#9ca4b0",
+    color: "#9ca3af",
     outline: "none",
     textAlign: "center",
     marginBottom: 14,
@@ -1020,7 +1143,7 @@ const styles: any = {
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    boxShadow: "0 12px 24px rgba(25,195,125,0.22)",
+    boxShadow: "0 12px 24px rgba(251,191,36,0.22)",
     cursor: "pointer",
   },
   headerBar: {
@@ -1030,33 +1153,33 @@ const styles: any = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 14px",
+    padding: "0 10px",
     flexShrink: 0,
   },
   adminPill: {
-    minWidth: 80,
-    height: 38,
+    minWidth: 88,
+    height: 40,
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
-    color: "#1d8f63",
+    color: "#b45309",
     fontWeight: 800,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#f4fbf7",
+    background: "#fff8dc",
     fontSize: 14,
   },
   userPill: {
-    minWidth: 80,
-    height: 38,
+    minWidth: 88,
+    height: 40,
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
-    color: "#1d8f63",
+    color: "#b45309",
     fontWeight: 800,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#f4fbf7",
+    background: "#fff8dc",
     padding: "0 12px",
     fontSize: 13,
   },
@@ -1073,17 +1196,18 @@ const styles: any = {
   mainArea: {
     flex: 1,
     minHeight: 0,
-    overflow: "hidden",
     position: "relative",
+    overflow: "hidden",
   },
   mapPage: {
+    position: "relative",
     width: "100%",
     height: "100%",
-    position: "relative",
+    minHeight: 0,
   },
-  fullMapWrap: {
-    position: "absolute",
-    inset: 0,
+  mapContainer: {
+    width: "100%",
+    height: "100%",
   },
   recordFab: {
     position: "absolute",
@@ -1091,13 +1215,13 @@ const styles: any = {
     bottom: 86,
     transform: "translateX(-50%)",
     border: "none",
-    background: NAVY,
+    background: "#8c3f0b",
     color: "white",
     fontSize: 17,
     fontWeight: 900,
     padding: "18px 32px",
     borderRadius: 999,
-    boxShadow: "0 14px 28px rgba(22,37,68,0.22)",
+    boxShadow: "0 14px 28px rgba(120,53,15,0.22)",
     cursor: "pointer",
     zIndex: 500,
   },
@@ -1109,14 +1233,14 @@ const styles: any = {
     background: BG,
   },
   pageHeading: {
-    color: NAVY,
+    color: "#78350f",
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.03em",
     marginBottom: 20,
   },
   emptyFeed: {
-    color: "#c8d0db",
+    color: "#d6b37c",
     textAlign: "center",
     marginTop: 150,
     fontWeight: 900,
@@ -1143,9 +1267,9 @@ const styles: any = {
     gap: 8,
     fontSize: 11,
     fontWeight: 900,
-    color: GREEN,
+    color: "#b45309",
     padding: "7px 10px",
-    background: "#f4fbf7",
+    background: "#fff8dc",
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
   },
@@ -1161,8 +1285,8 @@ const styles: any = {
   },
   statusPending: {
     border: "none",
-    background: "#eef2f7",
-    color: "#9ea7b4",
+    background: "#f8f4ea",
+    color: "#bcaea0",
     fontWeight: 900,
     fontSize: 10,
     padding: "7px 10px",
@@ -1175,10 +1299,10 @@ const styles: any = {
     objectFit: "cover",
     borderRadius: 20,
     marginBottom: 12,
-    border: "1px solid #edf2f5",
+    border: "1px solid #f7ebd4",
   },
   feedText: {
-    color: "#5c6674",
+    color: "#5f4a34",
     fontSize: 15,
     lineHeight: 1.55,
     fontWeight: 700,
@@ -1189,11 +1313,11 @@ const styles: any = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTop: "1px solid #eff3f7",
+    borderTop: "1px solid #f8efdf",
     paddingTop: 12,
   },
   feedUser: {
-    color: "#9aa3af",
+    color: "#a88d6e",
     fontWeight: 800,
     fontSize: 12,
   },
@@ -1206,11 +1330,11 @@ const styles: any = {
     cursor: "pointer",
   },
   totalBox: {
-    background: NAVY,
+    background: "#78350f",
     borderRadius: 40,
     padding: "34px 16px 24px",
     textAlign: "center",
-    boxShadow: "0 14px 28px rgba(22,37,68,0.18)",
+    boxShadow: "0 14px 28px rgba(120,53,15,0.18)",
     marginBottom: 18,
   },
   totalNumber: {
@@ -1240,7 +1364,7 @@ const styles: any = {
     boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
   },
   smallStatTitle: {
-    color: "#9ca6b5",
+    color: "#bda790",
     fontSize: 12,
     fontWeight: 900,
     marginBottom: 14,
@@ -1258,7 +1382,7 @@ const styles: any = {
     marginBottom: 20,
   },
   categoryStatsTitle: {
-    color: NAVY,
+    color: "#78350f",
     fontWeight: 900,
     fontSize: 18,
     marginBottom: 14,
@@ -1269,7 +1393,7 @@ const styles: any = {
     gap: 12,
   },
   categoryStatCard: {
-    background: "#f8fbf9",
+    background: "#fffdf6",
     border: `1px solid ${BORDER}`,
     borderRadius: 20,
     padding: "14px 12px",
@@ -1293,7 +1417,7 @@ const styles: any = {
     boxShadow: "0 8px 16px rgba(0,0,0,0.10)",
   },
   categoryStatLabel: {
-    color: NAVY,
+    color: "#78350f",
     fontSize: 12,
     fontWeight: 800,
     marginBottom: 6,
@@ -1306,7 +1430,7 @@ const styles: any = {
     lineHeight: 1,
   },
   adminCard: {
-    background: "#f9fcfa",
+    background: "#fffdf8",
     borderRadius: 32,
     border: "2px dashed #f3dddd",
     padding: "30px 18px 22px",
@@ -1320,7 +1444,7 @@ const styles: any = {
     marginBottom: 12,
   },
   adminDesc: {
-    color: "#bac2cb",
+    color: "#b99b7f",
     fontWeight: 800,
     lineHeight: 1.45,
     fontSize: 13,
@@ -1364,7 +1488,7 @@ const styles: any = {
   sheetBackdrop: {
     position: "fixed",
     inset: 0,
-    background: "rgba(10,18,32,0.18)",
+    background: "rgba(69,26,3,0.18)",
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "center",
@@ -1388,7 +1512,7 @@ const styles: any = {
     marginBottom: 14,
   },
   sheetTitle: {
-    color: NAVY,
+    color: "#78350f",
     fontWeight: 900,
     fontSize: 20,
     letterSpacing: "-0.03em",
@@ -1397,7 +1521,7 @@ const styles: any = {
     width: 38,
     height: 38,
     borderRadius: 12,
-    border: "1px solid #eef3f0",
+    border: "1px solid #f8efdf",
     background: "white",
     fontSize: 18,
     cursor: "pointer",
@@ -1410,7 +1534,7 @@ const styles: any = {
     boxShadow: "0 8px 18px rgba(0,0,0,0.06)",
   },
   helpCopy: {
-    color: "#8f9caa",
+    color: "#a88d6e",
     fontSize: 12,
     fontWeight: 700,
     marginBottom: 12,
@@ -1426,14 +1550,14 @@ const styles: any = {
     height: 84,
     border: "none",
     borderRadius: 22,
-    background: NAVY,
+    background: "#78350f",
     color: "white",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
-    boxShadow: "0 8px 18px rgba(22,37,68,0.18)",
+    boxShadow: "0 8px 18px rgba(120,53,15,0.18)",
     cursor: "pointer",
   },
   actionCardLabelWhite: {
@@ -1492,13 +1616,13 @@ const styles: any = {
   },
   selectBox: {
     width: "100%",
-    border: "2px solid #edf2f0",
+    border: "2px solid #f5e8ca",
     background: "white",
     borderRadius: 18,
     padding: "14px 14px",
     fontSize: 15,
     fontWeight: 800,
-    color: NAVY,
+    color: "#78350f",
     marginBottom: 12,
     outline: "none",
   },
@@ -1520,7 +1644,7 @@ const styles: any = {
     cursor: "pointer",
   },
   categoryCardText: {
-    color: NAVY,
+    color: "#78350f",
     fontSize: 12,
     fontWeight: 900,
   },
@@ -1528,11 +1652,11 @@ const styles: any = {
     width: "100%",
     minHeight: 120,
     borderRadius: 24,
-    border: "2px solid #eef2f0",
+    border: "2px solid #f6ead3",
     background: "white",
     padding: "16px 14px",
     fontSize: 15,
-    color: NAVY,
+    color: "#78350f",
     resize: "none",
     outline: "none",
     marginBottom: 14,
@@ -1547,14 +1671,14 @@ const styles: any = {
     borderRadius: 24,
     padding: "20px 16px",
     cursor: "pointer",
-    boxShadow: "0 14px 24px rgba(25,195,125,0.20)",
+    boxShadow: "0 14px 24px rgba(251,191,36,0.20)",
   },
   toast: {
     position: "fixed",
     top: 14,
     left: "50%",
     transform: "translateX(-50%)",
-    background: "#182742",
+    background: "#78350f",
     color: "white",
     padding: "10px 18px",
     borderRadius: 14,
@@ -1562,7 +1686,6 @@ const styles: any = {
     boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
     fontWeight: 800,
     fontSize: 14,
-  
     whiteSpace: "nowrap",
     maxWidth: "90vw",
     overflow: "hidden",
