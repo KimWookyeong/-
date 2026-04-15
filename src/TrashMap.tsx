@@ -148,19 +148,19 @@ function DaisyLogo({
           animation: animated ? "daisySway 3.2s ease-in-out infinite" : "none",
         }}
       >
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-          <ellipse
-            key={angle}
-            cx="60"
-            cy="38"
-            rx="15"
-            ry="23"
-            fill="white"
-            stroke="#e5b233"
-            strokeWidth="3"
-            transform={`rotate(${angle} 60 60)`}
-          />
-        ))}
+       {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+         <ellipse
+           key={angle}
+           cx="60"
+           cy="34"       // 🔥 38 → 34 (위로 올림)
+           rx="12"       // 🔥 15 → 12 (가로 축소)
+           ry="18"       // 🔥 23 → 18 (세로 축소 핵심)
+           fill="white"
+           stroke="#e5b233"
+           strokeWidth="3"
+           transform={`rotate(${angle} 60 60)`}
+         />
+))}
 
         <circle cx="60" cy="60" r="14.5" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
         <circle cx="55" cy="55" r="4" fill="#ffd86b" opacity="0.9" />
