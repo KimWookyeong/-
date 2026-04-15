@@ -18,6 +18,7 @@ const GREEN = "#f4b321";
 const NAVY = "#92400e";
 const BORDER = "#fde68a";
 const LIGHT_TEXT = "#b2875f";
+const SOFT_BG = "#fff8dc";
 
 const NAME_KEY = "mulgeum_daisy_name_v1";
 const ADMIN_KEY = "mulgeum_daisy_admin_code_v1";
@@ -117,7 +118,13 @@ function MapSizeFixer() {
   return null;
 }
 
-function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
+function DaisyLogo({
+  size = 84,
+  animated = false,
+}: {
+  size?: number;
+  animated?: boolean;
+}) {
   return (
     <div
       style={{
@@ -126,7 +133,7 @@ function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 6,
+        flexShrink: 0,
       }}
     >
       <svg
@@ -135,54 +142,59 @@ function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
         viewBox="0 0 120 120"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        style={{
+          overflow: "visible",
+          transformOrigin: "60px 92px",
+          animation: animated ? "daisySway 3.2s ease-in-out infinite" : "none",
+        }}
       >
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
           <ellipse
             key={angle}
             cx="60"
-            cy="28"
-            rx="14"
-            ry="24"
+            cy="38"
+            rx="15"
+            ry="23"
             fill="white"
             stroke="#e5b233"
             strokeWidth="3"
             transform={`rotate(${angle} 60 60)`}
           />
         ))}
-        <circle cx="60" cy="60" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
+
+        <circle cx="60" cy="60" r="14.5" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
+        <circle cx="55" cy="55" r="4" fill="#ffd86b" opacity="0.9" />
+
+        <path
+          d="M60 80 C60 90, 60 100, 60 110"
+          stroke="#8b6b3f"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M60 98 C70 92, 78 84, 80 76 C70 78, 62 86, 60 98 Z"
+          fill="#a8b86a"
+          stroke="#8b6b3f"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
       </svg>
     </div>
   );
 }
 
 function DaisyHeaderFlower() {
+  return <DaisyLogo size={28} />;
+}
+
+function DaisyWordMark() {
   return (
-    <div
-      style={{
-        width: 24,
-        height: 24,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <svg width="24" height="24" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-          <ellipse
-            key={angle}
-            cx="60"
-            cy="28"
-            rx="14"
-            ry="24"
-            fill="white"
-            stroke="#e5b233"
-            strokeWidth="6"
-            transform={`rotate(${angle} 60 60)`}
-          />
-        ))}
-        <circle cx="60" cy="60" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="6" />
-      </svg>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <DaisyHeaderFlower />
+      <div style={{ fontSize: 20, fontWeight: 900, color: NAVY, letterSpacing: "-0.02em" }}>
+        물금동아
+      </div>
     </div>
   );
 }
@@ -202,7 +214,10 @@ function DaisyCharFlower({ char }: { char: string }) {
         flexShrink: 0,
       }}
     >
-      <svg viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+      <svg
+        viewBox="0 0 100 100"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+      >
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
           <ellipse
             key={angle}
@@ -257,6 +272,10 @@ function DaisyMeaningLine() {
       <span style={styles.meaningText}>역 쓰레기 해결</span>
     </div>
   );
+}
+
+function ProjectBadge() {
+  return <div style={styles.projectBadge}>Mulgeum Daisy Project</div>;
 }
 
 function MapNavIcon({ active }: { active: boolean }) {
@@ -340,15 +359,9 @@ function Header({
 }) {
   return (
     <header style={styles.headerBar}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <DaisyHeaderFlower />
-        <div style={{ fontSize: 20, fontWeight: 900, color: NAVY, letterSpacing: "-0.02em" }}>
-          물금동아
-        </div>
-      </div>
-
+      <DaisyWordMark />
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {isAdmin ? <div style={styles.adminPill}>Admin</div> : <div style={styles.userPill}>{nickname}</div>}
+        {isAdmin ? <div style={styles.adminPill}>관리자</div> : <div style={styles.userPill}>{nickname}</div>}
         <button onClick={onLogout} style={styles.logoutButton} aria-label="로그아웃">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
@@ -617,7 +630,7 @@ export default function TrashMap() {
       setShowAddSheet(false);
       setActiveTab("map");
       setMessage("업로드 완료");
-    } catch (error) {
+    } catch {
       if (formData.image) {
         try {
           await push(ref(db, REPORTS_PATH), { ...reportData, image: "" });
@@ -685,20 +698,25 @@ export default function TrashMap() {
         {message ? <div style={styles.toast}>{message}</div> : null}
 
         <div style={styles.joinWrap}>
-          <DaisyFlowerOnly size={84} />
-          <div style={styles.joinTitle}>물금동아</div>
-          <div style={styles.projectSubTitle}>데이지 프로젝트</div>
+          <ProjectBadge />
+
+          <div style={styles.heroBrand}>
+            <DaisyLogo size={76} animated />
+            <div style={styles.heroTitleBlock}>
+              <div style={styles.joinTitle}>물금동아</div>
+              <div style={styles.projectSubTitle}>데이지 프로젝트</div>
+            </div>
+          </div>
 
           <div style={{ marginTop: 10, marginBottom: 10 }}>
             <DaisyMeaningLine />
           </div>
 
-          <div style={styles.joinGuide}>
-            실시간 지도에 합류해 우리 동네를 함께 기록해요
-          </div>
+          <div style={styles.joinGuide}>실시간 지도에 합류해 우리 동네를 함께 기록해요</div>
 
           <div style={styles.joinCard}>
             <div style={styles.joinCardTitle}>반가워요 활동가님!</div>
+            <div style={styles.joinCardSub}>학번과 이름을 입력해 주세요.</div>
 
             <form onSubmit={handleJoin}>
               <input
@@ -711,11 +729,11 @@ export default function TrashMap() {
                 type="password"
                 value={adminCode}
                 onChange={(e) => setAdminCode(e.target.value)}
-                placeholder="관리자만 입력"
+                placeholder="관리자 코드 (관리자만 입력)"
                 style={styles.joinInput}
               />
               <button type="submit" style={styles.joinButton}>
-                합류하기
+                프로젝트 합류하기 ›
               </button>
             </form>
           </div>
@@ -1074,6 +1092,14 @@ const globalCss = `
     background: transparent !important;
     border: none !important;
   }
+
+  @keyframes daisySway {
+    0% { transform: rotate(0deg) translateY(0px); }
+    25% { transform: rotate(-3deg) translateY(0px); }
+    50% { transform: rotate(2.5deg) translateY(-1px); }
+    75% { transform: rotate(-2deg) translateY(0px); }
+    100% { transform: rotate(0deg) translateY(0px); }
+  }
 `;
 
 const styles: any = {
@@ -1089,7 +1115,7 @@ const styles: any = {
     width: "100%",
     height: "100vh",
     background:
-      "radial-gradient(circle at top center, rgba(244,179,33,0.12), transparent 34%), #fefce8",
+      "radial-gradient(circle at top center, rgba(244,179,33,0.10), transparent 32%), #fefce8",
     overflowY: "auto",
   },
   joinWrap: {
@@ -1098,22 +1124,41 @@ const styles: any = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "28px 16px 40px",
+    padding: "30px 16px 42px",
+  },
+  projectBadge: {
+    padding: "10px 22px",
+    borderRadius: 999,
+    background: "#fff6de",
+    color: "#b2875f",
+    fontSize: 14,
+    fontWeight: 700,
+    marginBottom: 22,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+  },
+  heroBrand: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
+  heroTitleBlock: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
   },
   joinTitle: {
     fontSize: 34,
     fontWeight: 900,
     color: NAVY,
     letterSpacing: "-0.04em",
-    marginTop: 0,
+    lineHeight: 1.05,
     marginBottom: 4,
-    lineHeight: 1.1,
   },
   projectSubTitle: {
     fontSize: 18,
     fontWeight: 800,
     color: "#b2875f",
-    marginBottom: 8,
   },
   meaningText: {
     fontSize: 16,
@@ -1145,6 +1190,14 @@ const styles: any = {
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.04em",
+    marginBottom: 8,
+  },
+  joinCardSub: {
+    textAlign: "center",
+    color: LIGHT_TEXT,
+    lineHeight: 1.5,
+    fontSize: 15,
+    fontWeight: 700,
     marginBottom: 18,
   },
   joinInput: {
@@ -1183,7 +1236,7 @@ const styles: any = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 10px",
+    padding: "0 12px",
     flexShrink: 0,
   },
   adminPill: {
@@ -1196,8 +1249,9 @@ const styles: any = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#fff8dc",
+    background: SOFT_BG,
     fontSize: 14,
+    padding: "0 14px",
   },
   userPill: {
     minWidth: 88,
@@ -1209,7 +1263,7 @@ const styles: any = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#fff8dc",
+    background: SOFT_BG,
     padding: "0 12px",
     fontSize: 13,
   },
@@ -1300,7 +1354,7 @@ const styles: any = {
     fontWeight: 900,
     color: NAVY,
     padding: "7px 10px",
-    background: "#fff8dc",
+    background: SOFT_BG,
     borderRadius: 999,
     border: `1px solid ${BORDER}`,
   },
