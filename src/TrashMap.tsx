@@ -117,53 +117,6 @@ function MapSizeFixer() {
   return null;
 }
 
-function DaisyLetter({ letter }: { letter: string }) {
-  return (
-    <div
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 32,
-        height: 32,
-        margin: "0 1px",
-        verticalAlign: "middle",
-        flexShrink: 0,
-      }}
-    >
-      <svg viewBox="0 0 100 100" style={{ position: "absolute", width: "100%", height: "100%" }}>
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-          <ellipse
-            key={angle}
-            cx="50"
-            cy="25"
-            rx="14"
-            ry="28"
-            fill="white"
-            stroke="#f4b321"
-            strokeWidth="3"
-            transform={`rotate(${angle} 50 50)`}
-          />
-        ))}
-        <circle cx="50" cy="50" r="20" fill="#f4b321" stroke="#c98909" strokeWidth="2" />
-      </svg>
-      <span
-        style={{
-          position: "relative",
-          zIndex: 1,
-          fontWeight: 900,
-          fontSize: 13,
-          color: "#451a03",
-          marginTop: 1,
-        }}
-      >
-        {letter}
-      </span>
-    </div>
-  );
-}
-
 function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
   return (
     <div
@@ -173,7 +126,7 @@ function DaisyFlowerOnly({ size = 84 }: { size?: number }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 4,
+        marginBottom: 6,
       }}
     >
       <svg
@@ -230,6 +183,78 @@ function DaisyHeaderFlower() {
         ))}
         <circle cx="60" cy="60" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="6" />
       </svg>
+    </div>
+  );
+}
+
+function DaisyCharFlower({ char }: { char: string }) {
+  return (
+    <span
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        width: 30,
+        height: 30,
+        alignItems: "center",
+        justifyContent: "center",
+        verticalAlign: "middle",
+        margin: "0 1px",
+        flexShrink: 0,
+      }}
+    >
+      <svg viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <ellipse
+            key={angle}
+            cx="50"
+            cy="24"
+            rx="12"
+            ry="22"
+            fill="white"
+            stroke="#e5b233"
+            strokeWidth="3"
+            transform={`rotate(${angle} 50 50)`}
+          />
+        ))}
+        <circle cx="50" cy="50" r="15" fill="#f4b321" stroke="#c98909" strokeWidth="2" />
+      </svg>
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+          fontSize: 13,
+          fontWeight: 900,
+          color: "#5c3a18",
+          lineHeight: 1,
+        }}
+      >
+        {char}
+      </span>
+    </span>
+  );
+}
+
+function DaisyMeaningLine() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        gap: 2,
+        textAlign: "center",
+        color: NAVY,
+        fontWeight: 800,
+        lineHeight: 1.5,
+      }}
+    >
+      <DaisyCharFlower char="데" />
+      <span style={styles.meaningText}>이터를</span>
+      <DaisyCharFlower char="이" />
+      <span style={styles.meaningText}>용한</span>
+      <DaisyCharFlower char="지" />
+      <span style={styles.meaningText}>역 쓰레기 해결</span>
     </div>
   );
 }
@@ -430,8 +455,7 @@ export default function TrashMap() {
         items.sort((a: any, b: any) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setReports(items);
       },
-      (error) => {
-        console.error(error);
+      () => {
         setMessage("실시간 데이터 연결에 실패했습니다.");
       }
     );
@@ -488,7 +512,7 @@ export default function TrashMap() {
     const value = nicknameInput.trim();
 
     if (!value) {
-      setMessage("학번과 이름을 입력해 주세요.");
+      setMessage("학번-이름을 입력해 주세요.");
       return;
     }
 
@@ -515,9 +539,7 @@ export default function TrashMap() {
 
     try {
       await signOut(auth);
-    } catch (error) {
-      console.error(error);
-    }
+    } catch {}
 
     setMessage("로그아웃 되었습니다.");
   };
@@ -539,9 +561,7 @@ export default function TrashMap() {
         }));
         setMessage("현재 위치를 불러왔습니다.");
       },
-      () => {
-        setMessage("위치 권한을 허용해 주세요.");
-      },
+      () => setMessage("위치 권한을 허용해 주세요."),
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
@@ -565,7 +585,7 @@ export default function TrashMap() {
 
   const handleSave = async () => {
     if (!nickname) {
-      setMessage("학번과 이름이 필요합니다.");
+      setMessage("학번-이름이 필요합니다.");
       return;
     }
 
@@ -598,24 +618,16 @@ export default function TrashMap() {
       setActiveTab("map");
       setMessage("업로드 완료");
     } catch (error) {
-      console.error(error);
-
       if (formData.image) {
         try {
-          await push(ref(db, REPORTS_PATH), {
-            ...reportData,
-            image: "",
-          });
+          await push(ref(db, REPORTS_PATH), { ...reportData, image: "" });
           resetForm();
           setShowAddSheet(false);
           setActiveTab("map");
           setMessage("사진 없이 업로드 완료");
           return;
-        } catch (retryError) {
-          console.error(retryError);
-        }
+        } catch {}
       }
-
       setMessage("저장에 실패했습니다.");
     }
   };
@@ -627,8 +639,7 @@ export default function TrashMap() {
     try {
       await remove(ref(db, `${REPORTS_PATH}/${id}`));
       setMessage("삭제되었습니다.");
-    } catch (error) {
-      console.error(error);
+    } catch {
       setMessage("삭제 권한이 없습니다.");
     }
   };
@@ -650,8 +661,7 @@ export default function TrashMap() {
         status: nextStatus,
       });
       setMessage(nextStatus === "solved" ? "해결됨으로 변경되었습니다." : "진행중으로 변경되었습니다.");
-    } catch (error) {
-      console.error(error);
+    } catch {
       setMessage("상태 변경에 실패했습니다.");
     }
   };
@@ -663,8 +673,7 @@ export default function TrashMap() {
     try {
       await remove(ref(db, REPORTS_PATH));
       setMessage("전체 데이터가 초기화되었습니다.");
-    } catch (error) {
-      console.error(error);
+    } catch {
       setMessage("관리자 권한이 필요합니다.");
     }
   };
@@ -678,54 +687,35 @@ export default function TrashMap() {
         <div style={styles.joinWrap}>
           <DaisyFlowerOnly size={84} />
           <div style={styles.joinTitle}>물금동아</div>
+          <div style={styles.projectSubTitle}>데이지 프로젝트</div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-              whiteSpace: "nowrap",
-              overflow: "visible",
-              marginTop: 4,
-              marginBottom: 18,
-              padding: "0 8px",
-              flexWrap: "nowrap",
-            }}
-          >
-            <DaisyLetter letter="데" />
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>이터를</span>
-            <DaisyLetter letter="이" />
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>용한</span>
-            <DaisyLetter letter="지" />
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#78350f" }}>역 쓰레기 해결</span>
+          <div style={{ marginTop: 10, marginBottom: 10 }}>
+            <DaisyMeaningLine />
+          </div>
+
+          <div style={styles.joinGuide}>
+            실시간 지도에 합류해 우리 동네를 함께 기록해요
           </div>
 
           <div style={styles.joinCard}>
             <div style={styles.joinCardTitle}>반가워요 활동가님!</div>
-            <div style={styles.joinCardSub}>
-              실시간 지도에 합류하기 위해
-              <br />
-              학번과 이름을 입력해 주세요.
-            </div>
 
             <form onSubmit={handleJoin}>
               <input
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
-                placeholder="예: 30101_홍길동"
+                placeholder="예: 30101-홍길동"
                 style={styles.joinInput}
               />
               <input
                 type="password"
                 value={adminCode}
                 onChange={(e) => setAdminCode(e.target.value)}
-                placeholder="관리자 코드 (관리자만 입력)"
+                placeholder="관리자만 입력"
                 style={styles.joinInput}
               />
               <button type="submit" style={styles.joinButton}>
-                프로젝트 합류하기
-                <span style={{ fontSize: 24, lineHeight: 0, opacity: 0.95 }}>›</span>
+                합류하기
               </button>
             </form>
           </div>
@@ -1098,7 +1088,8 @@ const styles: any = {
   joinScreen: {
     width: "100%",
     height: "100vh",
-    background: BG,
+    background:
+      "radial-gradient(circle at top center, rgba(244,179,33,0.12), transparent 34%), #fefce8",
     overflowY: "auto",
   },
   joinWrap: {
@@ -1107,24 +1098,44 @@ const styles: any = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "24px 16px 36px",
+    padding: "28px 16px 40px",
   },
   joinTitle: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: 900,
     color: NAVY,
     letterSpacing: "-0.04em",
     marginTop: 0,
-    marginBottom: 6,
+    marginBottom: 4,
     lineHeight: 1.1,
+  },
+  projectSubTitle: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: "#b2875f",
+    marginBottom: 8,
+  },
+  meaningText: {
+    fontSize: 16,
+    fontWeight: 800,
+    color: NAVY,
+  },
+  joinGuide: {
+    textAlign: "center",
+    color: LIGHT_TEXT,
+    lineHeight: 1.6,
+    fontSize: 15,
+    fontWeight: 700,
+    marginTop: 10,
+    marginBottom: 22,
   },
   joinCard: {
     width: "100%",
     maxWidth: 640,
     background: "white",
-    borderRadius: 40,
-    marginTop: 10,
-    padding: "32px 24px 24px",
+    borderRadius: 36,
+    marginTop: 6,
+    padding: "28px 22px 22px",
     boxShadow: "0 18px 36px rgba(0,0,0,0.08)",
     border: `1px solid ${BORDER}`,
   },
@@ -1134,15 +1145,7 @@ const styles: any = {
     fontWeight: 900,
     fontSize: 28,
     letterSpacing: "-0.04em",
-  },
-  joinCardSub: {
-    textAlign: "center",
-    color: LIGHT_TEXT,
-    lineHeight: 1.6,
-    fontSize: 14,
-    fontWeight: 700,
-    marginTop: 10,
-    marginBottom: 22,
+    marginBottom: 18,
   },
   joinInput: {
     width: "100%",
@@ -1152,7 +1155,7 @@ const styles: any = {
     padding: "18px 14px",
     fontSize: 18,
     fontWeight: 800,
-    color: "#9ca3af",
+    color: "#6b7280",
     outline: "none",
     textAlign: "center",
     marginBottom: 14,
