@@ -20,20 +20,21 @@ const BORDER = "#fde68a";
 const LIGHT_TEXT = "#b2875f";
 const SOFT_BG = "#fff8dc";
 
-const NAME_KEY = "mulgeum_daisy_name_v1";
-const ADMIN_KEY = "mulgeum_daisy_admin_code_v1";
-const REPORTS_PATH = "mulgeum_daisy_reports";
+const NAME_KEY = "mulgeum_daisy_name_v2";
+const ADMIN_KEY = "mulgeum_daisy_admin_code_v2";
+const REPORTS_PATH = "mulgeum_daisy_reports_v2";
 
 const DEFAULT_CENTER: [number, number] = [35.327, 129.007];
 const ADMIN_NAME = "admin";
 const ADMIN_CODE = "1234";
 
-const AREAS = ["물금읍", "증산리", "가촌리", "범어리", "기타 구역"];
+const AREAS = ["물금읍", "증산리", "가촌리", "범어리", "기타"];
 
 const CATEGORIES = [
   { id: "cup", label: "일회용 컵", icon: "🥤", color: "#f4b321" },
   { id: "smoke", label: "담배꽁초", icon: "🚬", color: "#78350f" },
-  { id: "plastic", label: "플라스틱/비닐", icon: "🛍️", color: "#3b82f6" },
+  { id: "plastic", label: "플라스틱", icon: "🧴", color: "#3b82f6" },
+  { id: "vinyl", label: "비닐", icon: "🛍️", color: "#06b6d4" },
   { id: "bulky", label: "대형 폐기물", icon: "📦", color: "#4b5563" },
   { id: "etc", label: "기타 쓰레기", icon: "❓", color: "#9ca3af" },
 ];
@@ -88,6 +89,43 @@ function makePickerIcon() {
   });
 }
 
+function makeCurrentLocationIcon() {
+  return L.divIcon({
+    className: "current-location-marker",
+    html: `
+      <div style="
+        position: relative;
+        width: 22px;
+        height: 22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      ">
+        <div style="
+          position:absolute;
+          width:22px;
+          height:22px;
+          border-radius:50%;
+          background:rgba(59,130,246,0.22);
+          animation:pulseLocation 2s ease-out infinite;
+        "></div>
+        <div style="
+          width:12px;
+          height:12px;
+          border-radius:50%;
+          background:#2563eb;
+          border:3px solid white;
+          box-shadow:0 3px 10px rgba(37,99,235,0.35);
+          z-index:2;
+        "></div>
+      </div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -10],
+  });
+}
+
 function MapSizeFixer() {
   const map = useMap();
 
@@ -95,27 +133,94 @@ function MapSizeFixer() {
     const refresh = () => {
       try {
         map.invalidateSize(true);
-        map.setView(map.getCenter(), map.getZoom(), { animate: false });
       } catch {}
     };
 
-    const t1 = setTimeout(refresh, 100);
-    const t2 = setTimeout(refresh, 500);
-    const t3 = setTimeout(refresh, 1000);
-    const t4 = setTimeout(refresh, 1800);
-
+    const timers = [100, 500, 1000, 1800].map((t) => setTimeout(refresh, t));
     window.addEventListener("resize", refresh);
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
+      timers.forEach(clearTimeout);
       window.removeEventListener("resize", refresh);
     };
   }, [map]);
 
   return null;
+}
+
+function RecenterMap({
+  targetLocation,
+  zoom = 17,
+}: {
+  targetLocation: { lat: number; lng: number } | null;
+  zoom?: number;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!targetLocation) return;
+    map.flyTo([targetLocation.lat, targetLocation.lng], zoom, {
+      animate: true,
+      duration: 0.8,
+    });
+  }, [targetLocation, zoom, map]);
+
+  return null;
+}
+
+function InitialMapFollow({
+  currentLocation,
+  activeTab,
+}: {
+  currentLocation: { lat: number; lng: number } | null;
+  activeTab: string;
+}) {
+  const map = useMap();
+  const hasMovedRef = useRef(false);
+
+  useEffect(() => {
+    if (!currentLocation || activeTab !== "map" || hasMovedRef.current) return;
+    map.setView([currentLocation.lat, currentLocation.lng], 16, { animate: true });
+    hasMovedRef.current = true;
+  }, [currentLocation, activeTab, map]);
+
+  return null;
+}
+
+function ClickLocationPicker({
+  selectedLocation,
+  onChange,
+}: {
+  selectedLocation: { lat: number; lng: number } | null;
+  onChange: (loc: { lat: number; lng: number }) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+
+  if (!selectedLocation) return null;
+
+  return (
+    <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={makePickerIcon()}>
+      <Popup>선택한 위치</Popup>
+    </Marker>
+  );
+}
+
+function CurrentLocationMarker({
+  currentLocation,
+}: {
+  currentLocation: { lat: number; lng: number } | null;
+}) {
+  if (!currentLocation) return null;
+
+  return (
+    <Marker position={[currentLocation.lat, currentLocation.lng]} icon={makeCurrentLocationIcon()}>
+      <Popup>현재 위치</Popup>
+    </Marker>
+  );
 }
 
 function DaisyLogo({
@@ -148,19 +253,19 @@ function DaisyLogo({
           animation: animated ? "daisySway 3.2s ease-in-out infinite" : "none",
         }}
       >
-       {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-         <ellipse
-           key={angle}
-           cx="60"
-           cy="34"       // 🔥 38 → 34 (위로 올림)
-           rx="12"       // 🔥 15 → 12 (가로 축소)
-           ry="18"       // 🔥 23 → 18 (세로 축소 핵심)
-           fill="white"
-           stroke="#e5b233"
-           strokeWidth="3"
-           transform={`rotate(${angle} 60 60)`}
-         />
-))}
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+          <ellipse
+            key={angle}
+            cx="60"
+            cy="34"
+            rx="12"
+            ry="18"
+            fill="white"
+            stroke="#e5b233"
+            strokeWidth="3"
+            transform={`rotate(${angle} 60 60)`}
+          />
+        ))}
 
         <circle cx="60" cy="60" r="14.5" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
         <circle cx="55" cy="55" r="4" fill="#ffd86b" opacity="0.9" />
@@ -326,28 +431,6 @@ function StatsNavIcon({ active }: { active: boolean }) {
   );
 }
 
-function ClickLocationPicker({
-  selectedLocation,
-  onChange,
-}: {
-  selectedLocation: { lat: number; lng: number } | null;
-  onChange: (loc: { lat: number; lng: number }) => void;
-}) {
-  useMapEvents({
-    click(e) {
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
-    },
-  });
-
-  if (!selectedLocation) return null;
-
-  return (
-    <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={makePickerIcon()}>
-      <Popup>선택한 위치</Popup>
-    </Marker>
-  );
-}
-
 function Header({
   nickname,
   isAdmin,
@@ -406,6 +489,37 @@ function BottomNav({
   );
 }
 
+async function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, quality = 0.82): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+
+  let { width, height } = img;
+  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+  width = Math.round(width * ratio);
+  height = Math.round(height * ratio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
 export default function TrashMap() {
   const [nickname, setNickname] = useState("");
   const [nicknameInput, setNicknameInput] = useState("");
@@ -416,6 +530,12 @@ export default function TrashMap() {
   const [activeTab, setActiveTab] = useState("map");
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [message, setMessage] = useState("");
+  const [editingReportId, setEditingReportId] = useState<string | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [miniMapTarget, setMiniMapTarget] = useState<{ lat: number; lng: number } | null>(null);
+
+  const watchIdRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [formData, setFormData] = useState({
     category: "cup",
@@ -424,8 +544,6 @@ export default function TrashMap() {
     image: "",
     location: null as { lat: number; lng: number } | null,
   });
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setNickname(localStorage.getItem(NAME_KEY) || "");
@@ -468,7 +586,8 @@ export default function TrashMap() {
         items.sort((a: any, b: any) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setReports(items);
       },
-      () => {
+      (error) => {
+        console.error(error);
         setMessage("실시간 데이터 연결에 실패했습니다.");
       }
     );
@@ -477,10 +596,46 @@ export default function TrashMap() {
   }, []);
 
   useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const next = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        setCurrentLocation(next);
+      },
+      () => {},
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 15000,
+      }
+    );
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(""), 2200);
     return () => clearTimeout(timer);
   }, [message]);
+
+  useEffect(() => {
+    if (showAddSheet && currentLocation) {
+      setFormData((prev) => ({
+        ...prev,
+        location: currentLocation,
+      }));
+      setMiniMapTarget(currentLocation);
+    }
+  }, [showAddSheet, currentLocation]);
 
   const isAdmin =
     nickname.trim().toLowerCase() === ADMIN_NAME &&
@@ -504,6 +659,8 @@ export default function TrashMap() {
   }, [reports]);
 
   const resetForm = () => {
+    setEditingReportId(null);
+    setMiniMapTarget(null);
     setFormData({
       category: "cup",
       area: AREAS[0],
@@ -549,12 +706,32 @@ export default function TrashMap() {
     setAdminCode("");
     setSavedAdminCode("");
     setShowAddSheet(false);
+    resetForm();
 
     try {
       await signOut(auth);
     } catch {}
 
     setMessage("로그아웃 되었습니다.");
+  };
+
+  const handleStartEdit = (report: any) => {
+    const isOwner = !!user && report.uid === user.uid;
+    if (!isAdmin && !isOwner) {
+      setMessage("수정 권한이 없습니다.");
+      return;
+    }
+
+    setEditingReportId(report.id);
+    setMiniMapTarget(report.location || null);
+    setFormData({
+      category: report.category || "cup",
+      area: report.area || AREAS[0],
+      description: report.description || "",
+      image: report.image || "",
+      location: report.location || null,
+    });
+    setShowAddSheet(true);
   };
 
   const handleCurrentLocation = () => {
@@ -565,12 +742,15 @@ export default function TrashMap() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const next = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        setCurrentLocation(next);
+        setMiniMapTarget(next);
         setFormData((prev) => ({
           ...prev,
-          location: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          },
+          location: next,
         }));
         setMessage("현재 위치를 불러왔습니다.");
       },
@@ -579,7 +759,7 @@ export default function TrashMap() {
     );
   };
 
-  const handleImageChange = (e: any) => {
+  const handleImageChange = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -588,12 +768,13 @@ export default function TrashMap() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setFormData((prev) => ({ ...prev, image: reader.result as string }));
+    try {
+      const compressed = await compressImage(file);
+      setFormData((prev) => ({ ...prev, image: compressed }));
       setMessage("사진이 첨부되었습니다.");
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setMessage("사진 처리에 실패했습니다.");
+    }
   };
 
   const handleSave = async () => {
@@ -612,14 +793,45 @@ export default function TrashMap() {
       return;
     }
 
-    const reportData = {
-      uid: user.uid,
-      userName: nickname,
+    const payload = {
       category: formData.category,
       area: formData.area,
       description: formData.description.trim() || "내용 없음",
       image: formData.image || "",
       location: formData.location,
+    };
+
+    if (editingReportId) {
+      const target = reports.find((r) => r.id === editingReportId);
+      if (!target) {
+        setMessage("수정할 기록을 찾을 수 없습니다.");
+        return;
+      }
+
+      const isOwner = !!user && target.uid === user.uid;
+      if (!isAdmin && !isOwner) {
+        setMessage("수정 권한이 없습니다.");
+        return;
+      }
+
+      try {
+        await update(ref(db, `${REPORTS_PATH}/${editingReportId}`), {
+          ...payload,
+          updatedAtMs: Date.now(),
+        });
+        resetForm();
+        setShowAddSheet(false);
+        setMessage("수정이 완료되었습니다.");
+      } catch {
+        setMessage("수정에 실패했습니다.");
+      }
+      return;
+    }
+
+    const reportData = {
+      uid: user.uid,
+      userName: nickname,
+      ...payload,
       status: "pending",
       createdAtMs: Date.now(),
     };
@@ -658,15 +870,6 @@ export default function TrashMap() {
   };
 
   const handleToggleStatus = async (report: any) => {
-    const isOwner = !!user && report.uid === user.uid;
-    const canSolve = report.status === "pending";
-    const canReopen = report.status === "solved" && (isOwner || isAdmin);
-
-    if (!canSolve && !canReopen) {
-      setMessage("이 상태는 변경할 수 없습니다.");
-      return;
-    }
-
     const nextStatus = report.status === "pending" ? "solved" : "pending";
 
     try {
@@ -752,47 +955,57 @@ export default function TrashMap() {
       <main style={styles.mainArea}>
         {activeTab === "map" && (
           <div style={styles.mapPage}>
-            <MapContainer
-              key={`main-map-${activeTab}`}
-              center={DEFAULT_CENTER}
-              zoom={14}
-              style={styles.mapContainer}
-              preferCanvas={true}
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <MapSizeFixer />
+            <div style={styles.fullMapWrap}>
+              <MapContainer
+                key={`main-map-${activeTab}`}
+                center={DEFAULT_CENTER}
+                zoom={14}
+                style={styles.mapContainer}
+                preferCanvas={true}
+              >
+                <TileLayer
+                  attribution="&copy; OpenStreetMap contributors"
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MapSizeFixer />
+                <CurrentLocationMarker currentLocation={currentLocation} />
+                <InitialMapFollow currentLocation={currentLocation} activeTab={activeTab} />
 
-              {reports.map((report) => (
-                <Marker
-                  key={report.id}
-                  position={[report.location.lat, report.location.lng]}
-                  icon={makeMarkerIcon(report.category)}
-                >
-                  <Popup>
-                    <div style={{ minWidth: 160 }}>
-                      <div>
-                        <strong>
-                          {getCategory(report.category).icon} {getCategory(report.category).label}
-                        </strong>
+                {reports.map((report) => (
+                  <Marker
+                    key={report.id}
+                    position={[report.location.lat, report.location.lng]}
+                    icon={makeMarkerIcon(report.category)}
+                  >
+                    <Popup>
+                      <div style={{ minWidth: 160 }}>
+                        <div>
+                          <strong>
+                            {getCategory(report.category).icon} {getCategory(report.category).label}
+                          </strong>
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
+                        <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
+                        <div style={{ fontSize: 13 }}>
+                          상태: {report.status === "solved" ? "해결됨" : "진행중"}
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
                       </div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
-                      <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
-                      <div style={{ fontSize: 13 }}>
-                        상태: {report.status === "solved" ? "해결됨" : "진행중"}
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
 
-            <button style={styles.recordFab} onClick={() => setShowAddSheet(true)}>
-              기록하기 +
-            </button>
+              <button
+                style={styles.recordFab}
+                onClick={() => {
+                  resetForm();
+                  setShowAddSheet(true);
+                }}
+              >
+                기록하기 +
+              </button>
+            </div>
           </div>
         )}
 
@@ -807,10 +1020,7 @@ export default function TrashMap() {
                 const cat = getCategory(report.category);
                 const isOwner = !!user && report.uid === user.uid;
                 const canDelete = isAdmin || isOwner;
-                const canToggle =
-                  isAdmin ||
-                  report.status === "pending" ||
-                  (report.status === "solved" && isOwner);
+                const canEdit = isAdmin || isOwner;
 
                 const statusButtonStyle =
                   report.status === "solved" ? styles.statusSolved : styles.statusPending;
@@ -824,14 +1034,7 @@ export default function TrashMap() {
                         {cat.icon} {report.area}
                       </div>
 
-                      <button
-                        onClick={() => canToggle && handleToggleStatus(report)}
-                        style={{
-                          ...statusButtonStyle,
-                          opacity: canToggle ? 1 : 0.55,
-                          cursor: canToggle ? "pointer" : "not-allowed",
-                        }}
-                      >
+                      <button onClick={() => handleToggleStatus(report)} style={statusButtonStyle}>
                         {statusLabel}
                       </button>
                     </div>
@@ -842,10 +1045,21 @@ export default function TrashMap() {
 
                     <div style={styles.feedFooter}>
                       <div style={styles.feedUser}>👤 {report.userName}</div>
-                      {canDelete ? (
-                        <button onClick={() => handleDelete(report.id)} style={styles.deleteButton}>
-                          삭제
-                        </button>
+
+                      {canEdit || canDelete ? (
+                        <div style={styles.feedActions}>
+                          {canEdit ? (
+                            <button onClick={() => handleStartEdit(report)} style={styles.editButton}>
+                              수정
+                            </button>
+                          ) : null}
+
+                          {canDelete ? (
+                            <button onClick={() => handleDelete(report.id)} style={styles.deleteButton}>
+                              삭제
+                            </button>
+                          ) : null}
+                        </div>
                       ) : (
                         <div style={{ color: "#d8cfc5", fontSize: 11, fontWeight: 800 }}>읽기 전용</div>
                       )}
@@ -921,7 +1135,7 @@ export default function TrashMap() {
         <div style={styles.sheetBackdrop}>
           <div style={styles.addSheet}>
             <div style={styles.sheetHeader}>
-              <div style={styles.sheetTitle}>NEW RECORD</div>
+              <div style={styles.sheetTitle}>{editingReportId ? "RECORD EDIT" : "NEW RECORD"}</div>
               <button
                 onClick={() => {
                   resetForm();
@@ -942,8 +1156,13 @@ export default function TrashMap() {
                 <MapSizeFixer />
                 <ClickLocationPicker
                   selectedLocation={formData.location}
-                  onChange={(loc) => setFormData((prev) => ({ ...prev, location: loc }))}
+                  onChange={(loc) => {
+                    setFormData((prev) => ({ ...prev, location: loc }));
+                    setMiniMapTarget(loc);
+                  }}
                 />
+                <CurrentLocationMarker currentLocation={currentLocation} />
+                <RecenterMap targetLocation={miniMapTarget} zoom={17} />
               </MapContainer>
             </div>
 
@@ -955,15 +1174,11 @@ export default function TrashMap() {
                 <div style={styles.actionCardLabelWhite}>내 위치 잡기</div>
               </button>
 
-              <label style={styles.actionCardLight}>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: "none" }}
-                />
-
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={styles.actionCardLightButton}
+              >
                 {formData.image ? (
                   <div style={styles.previewWrap}>
                     <img src={formData.image} alt="preview" style={styles.uploadPreview} />
@@ -985,7 +1200,15 @@ export default function TrashMap() {
                     <div style={styles.actionCardLabelGreen}>사진 업로드</div>
                   </>
                 )}
-              </label>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
             </div>
 
             <select
@@ -1008,7 +1231,7 @@ export default function TrashMap() {
                   onClick={() => setFormData((prev) => ({ ...prev, category: cat.id }))}
                   style={{
                     ...styles.categoryCard,
-                    borderColor: formData.category === cat.id ? GREEN : "transparent",
+                    borderColor: formData.category === cat.id ? GREEN : "#edf2ee",
                     boxShadow:
                       formData.category === cat.id
                         ? "inset 0 0 0 1px rgba(244,179,33,0.25)"
@@ -1037,7 +1260,7 @@ export default function TrashMap() {
               }}
               disabled={!user}
             >
-              {user ? "지도에 업로드" : "로그인 연결 중..."}
+              {user ? (editingReportId ? "수정 내용 저장" : "지도에 업로드") : "로그인 연결 중..."}
             </button>
           </div>
         </div>
@@ -1088,7 +1311,8 @@ const globalCss = `
   }
 
   .trash-map-marker,
-  .trash-map-picker {
+  .trash-map-picker,
+  .current-location-marker {
     background: transparent !important;
     border: none !important;
   }
@@ -1099,6 +1323,17 @@ const globalCss = `
     50% { transform: rotate(2.5deg) translateY(-1px); }
     75% { transform: rotate(-2deg) translateY(0px); }
     100% { transform: rotate(0deg) translateY(0px); }
+  }
+
+  @keyframes pulseLocation {
+    0% {
+      transform: scale(0.7);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
   }
 `;
 
@@ -1266,6 +1501,10 @@ const styles: any = {
     background: SOFT_BG,
     padding: "0 12px",
     fontSize: 13,
+    maxWidth: 150,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   logoutButton: {
     width: 30,
@@ -1282,12 +1521,18 @@ const styles: any = {
     minHeight: 0,
     position: "relative",
     overflow: "hidden",
+    paddingBottom: 84,
   },
   mapPage: {
     position: "relative",
     width: "100%",
     height: "100%",
     minHeight: 0,
+  },
+  fullMapWrap: {
+    width: "100%",
+    height: "100%",
+    position: "relative",
   },
   mapContainer: {
     width: "100%",
@@ -1297,7 +1542,7 @@ const styles: any = {
   recordFab: {
     position: "absolute",
     left: "50%",
-    bottom: 86,
+    bottom: 28,
     transform: "translateX(-50%)",
     border: "none",
     background: NAVY,
@@ -1406,6 +1651,20 @@ const styles: any = {
     fontWeight: 800,
     fontSize: 12,
   },
+  feedActions: {
+    display: "flex",
+    gap: 8,
+  },
+  editButton: {
+    border: "none",
+    background: "#fff8ea",
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 13,
+    borderRadius: 12,
+    padding: "8px 12px",
+    cursor: "pointer",
+  },
   deleteButton: {
     border: "none",
     background: "transparent",
@@ -1474,8 +1733,8 @@ const styles: any = {
   },
   categoryStatsGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 10,
   },
   categoryStatCard: {
     background: "#fffdf6",
@@ -1486,7 +1745,7 @@ const styles: any = {
     flexDirection: "column",
     alignItems: "center",
     textAlign: "center",
-    minHeight: 116,
+    minHeight: 118,
     justifyContent: "center",
   },
   categoryStatIcon: {
@@ -1507,6 +1766,10 @@ const styles: any = {
     fontWeight: 800,
     marginBottom: 6,
     lineHeight: 1.35,
+    minHeight: 32,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   categoryStatCount: {
     color: GREEN,
@@ -1547,6 +1810,10 @@ const styles: any = {
     cursor: "pointer",
   },
   bottomNav: {
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
     height: 82,
     background: "white",
     borderTop: `1px solid ${BORDER}`,
@@ -1555,6 +1822,7 @@ const styles: any = {
     alignItems: "center",
     flexShrink: 0,
     paddingBottom: 4,
+    zIndex: 40,
   },
   navItemButton: {
     border: "none",
@@ -1577,9 +1845,10 @@ const styles: any = {
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "center",
-    zIndex: 2000,
+    zIndex: 4000,
   },
   addSheet: {
+    position: "relative",
     width: "100%",
     maxWidth: 800,
     maxHeight: "88vh",
@@ -1589,6 +1858,7 @@ const styles: any = {
     borderTopRightRadius: 30,
     padding: "18px 14px 22px",
     boxShadow: "0 -14px 36px rgba(0,0,0,0.16)",
+    zIndex: 4001,
   },
   sheetHeader: {
     display: "flex",
@@ -1650,7 +1920,7 @@ const styles: any = {
     fontWeight: 900,
     color: "white",
   },
-  actionCardLight: {
+  actionCardLightButton: {
     height: 84,
     borderRadius: 22,
     background: "white",
@@ -1713,25 +1983,29 @@ const styles: any = {
   },
   categoryGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "1fr 1fr 1fr",
     gap: 10,
     marginBottom: 12,
   },
   categoryCard: {
-    border: "2px solid transparent",
+    border: "2px solid #edf2ee",
     background: "white",
     borderRadius: 20,
-    minHeight: 68,
+    minHeight: 96,
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    padding: "0 14px",
+    padding: "12px 10px",
     cursor: "pointer",
   },
   categoryCardText: {
     color: NAVY,
     fontSize: 12,
     fontWeight: 900,
+    textAlign: "center",
+    lineHeight: 1.35,
   },
   textAreaBox: {
     width: "100%",
@@ -1767,7 +2041,7 @@ const styles: any = {
     color: "white",
     padding: "10px 18px",
     borderRadius: 14,
-    zIndex: 4000,
+    zIndex: 5000,
     boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
     fontWeight: 800,
     fontSize: 14,
