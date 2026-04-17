@@ -21,11 +21,11 @@ const BORDER = "#fde68a";
 const LIGHT_TEXT = "#b2875f";
 const SOFT_BG = "#fff8dc";
 
-const NAME_KEY = "mulgeum_daisy_name_v4";
-const ADMIN_KEY = "mulgeum_daisy_admin_code_v4";
-const REPORTS_PATH = "mulgeum_daisy_reports_v4";
+const NAME_KEY = "mulgeum_daisy_name_v5";
+const ADMIN_KEY = "mulgeum_daisy_admin_code_v5";
+const REPORTS_PATH = "mulgeum_daisy_reports_v5";
 
-const DEFAULT_CENTER = [35.327, 129.007] as [number, number];
+const DEFAULT_CENTER: [number, number] = [35.327, 129.007];
 const ADMIN_NAME = "admin";
 const ADMIN_CODE = "1234";
 
@@ -93,7 +93,11 @@ function makeCurrentLocationIcon() {
 function MapSizeFixer() {
   const map = useMap();
   useEffect(() => {
-    const refresh = () => { try { map.invalidateSize(true); } catch {} };
+    const refresh = () => {
+      try {
+        map.invalidateSize(true);
+      } catch {}
+    };
     const timers = [100, 500, 1000, 1800].map((t) => setTimeout(refresh, t));
     window.addEventListener("resize", refresh);
     return () => {
@@ -131,11 +135,13 @@ function InitialMapFollow({
 }) {
   const map = useMap();
   const hasMovedRef = useRef(false);
+
   useEffect(() => {
     if (!currentLocation || activeTab !== "map" || hasMovedRef.current) return;
     map.setView([currentLocation.lat, currentLocation.lng], 16, { animate: true });
     hasMovedRef.current = true;
   }, [currentLocation, activeTab, map]);
+
   return null;
 }
 
@@ -151,7 +157,9 @@ function ClickLocationPicker({
       onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
+
   if (!selectedLocation) return null;
+
   return (
     <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={makePickerIcon()}>
       <Popup>선택한 위치</Popup>
@@ -165,6 +173,7 @@ function CurrentLocationMarker({
   currentLocation: { lat: number; lng: number } | null;
 }) {
   if (!currentLocation) return null;
+
   return (
     <Marker position={[currentLocation.lat, currentLocation.lng]} icon={makeCurrentLocationIcon()}>
       <Popup>현재 위치</Popup>
@@ -172,7 +181,13 @@ function CurrentLocationMarker({
   );
 }
 
-function DaisyLogo({ size = 84, animated = false }: { size?: number; animated?: boolean }) {
+function DaisyLogo({
+  size = 84,
+  animated = false,
+}: {
+  size?: number;
+  animated?: boolean;
+}) {
   return (
     <div
       style={{
@@ -318,8 +333,11 @@ function ProjectBadge() {
 function MapNavIcon({ active }: { active: boolean }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M12 21C16 16.7 18 13.5 18 10.5C18 6.9 15.3 4 12 4C8.7 4 6 6.9 6 10.5C6 13.5 8 16.7 12 21Z"
-        stroke={active ? GREEN : "#c7cbd3"} strokeWidth="2.2" />
+      <path
+        d="M12 21C16 16.7 18 13.5 18 10.5C18 6.9 15.3 4 12 4C8.7 4 6 6.9 6 10.5C6 13.5 8 16.7 12 21Z"
+        stroke={active ? GREEN : "#c7cbd3"}
+        strokeWidth="2.2"
+      />
       <circle cx="12" cy="10" r="2.4" fill={active ? GREEN : "#c7cbd3"} />
     </svg>
   );
@@ -331,8 +349,12 @@ function ListNavIcon({ active }: { active: boolean }) {
       <circle cx="6" cy="7" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
       <circle cx="6" cy="12" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
       <circle cx="6" cy="17" r="1.5" fill={active ? GREEN : "#c7cbd3"} />
-      <path d="M10 7H18M10 12H18M10 17H18"
-        stroke={active ? GREEN : "#c7cbd3"} strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M10 7H18M10 12H18M10 17H18"
+        stroke={active ? GREEN : "#c7cbd3"}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -340,9 +362,18 @@ function ListNavIcon({ active }: { active: boolean }) {
 function StatsNavIcon({ active }: { active: boolean }) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M5 19V11M10 19V6M15 19V13M20 19V9"
-        stroke={active ? GREEN : "#c7cbd3"} strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M3 19H22" stroke={active ? GREEN : "#c7cbd3"} strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M5 19V11M10 19V6M15 19V13M20 19V9"
+        stroke={active ? GREEN : "#c7cbd3"}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M3 19H22"
+        stroke={active ? GREEN : "#c7cbd3"}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -377,7 +408,13 @@ function Header({
         {isAdmin ? <div style={styles.adminPill}>관리자</div> : <div style={styles.userPill}>{nickname}</div>}
         <button onClick={onLogout} style={styles.logoutButton} aria-label="로그아웃">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M10 7L15 12L10 17" stroke="#c1b7ab" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M10 7L15 12L10 17"
+              stroke="#c1b7ab"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
             <path d="M15 12H4" stroke="#c1b7ab" strokeWidth="2.2" strokeLinecap="round" />
           </svg>
         </button>
@@ -437,8 +474,10 @@ async function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, qual
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
+
   const ctx = canvas.getContext("2d");
   if (!ctx) return dataUrl;
+
   ctx.drawImage(img, 0, 0, width, height);
   return canvas.toDataURL("image/jpeg", quality);
 }
@@ -468,38 +507,52 @@ function getBadgeByCount(count: number) {
 
 function buildRanking(reports: any[]) {
   const userMap: Record<string, { name: string; count: number; solved: number }> = {};
+
   reports.forEach((report) => {
     const key = report.uid || report.userName || "unknown";
-    if (!userMap[key]) userMap[key] = { name: report.userName || "이름 없음", count: 0, solved: 0 };
+    if (!userMap[key]) {
+      userMap[key] = { name: report.userName || "이름 없음", count: 0, solved: 0 };
+    }
     userMap[key].count += 1;
     if (report.status === "solved") userMap[key].solved += 1;
   });
 
   return Object.values(userMap)
     .map((item) => ({ ...item, badge: getBadgeByCount(item.count) }))
-    .sort((a, b) => (b.count !== a.count ? b.count - a.count : b.solved - a.solved));
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return b.solved - a.solved;
+    });
 }
 
 function buildHeatmapData(reports: any[]) {
   const grid = new Map<string, { lat: number; lng: number; count: number }>();
   const precision = 0.0016;
+
   reports.forEach((report) => {
     if (!report.location) return;
-    const latKey = Math.round(report.location.lat / precision) * precision;
-    const lngKey = Math.round(report.location.lng / precision) * precision;
+    const lat = report.location.lat;
+    const lng = report.location.lng;
+    const latKey = Math.round(lat / precision) * precision;
+    const lngKey = Math.round(lng / precision) * precision;
     const key = `${latKey.toFixed(4)}_${lngKey.toFixed(4)}`;
-    if (!grid.has(key)) grid.set(key, { lat: latKey, lng: lngKey, count: 0 });
+
+    if (!grid.has(key)) {
+      grid.set(key, { lat: latKey, lng: lngKey, count: 0 });
+    }
+
     grid.get(key)!.count += 1;
   });
+
   return Array.from(grid.values());
 }
 
 function getHeatColor(count: number, maxCount: number) {
   const ratio = maxCount <= 1 ? 0.35 : count / maxCount;
-  if (ratio >= 0.8) return "#ef4444";
+  if (ratio >= 0.8) return "#dc2626";
   if (ratio >= 0.55) return "#f97316";
-  if (ratio >= 0.3) return "#f59e0b";
-  return "#fde047";
+  if (ratio >= 0.3) return "#facc15";
+  return "#fde68a";
 }
 
 function HeatmapLayer({ reports }: { reports: any[] }) {
@@ -511,20 +564,32 @@ function HeatmapLayer({ reports }: { reports: any[] }) {
       {data.map((item, index) => {
         const color = getHeatColor(item.count, maxCount);
         const ratio = item.count / maxCount;
-        const outerRadius = 90 + ratio * 170;
-        const innerRadius = 35 + ratio * 70;
+        const outerRadius = 120 + ratio * 220;
+        const innerRadius = 48 + ratio * 90;
 
         return (
           <div key={`${item.lat}-${item.lng}-${index}`}>
             <Circle
               center={[item.lat, item.lng]}
               radius={outerRadius}
-              pathOptions={{ color, weight: 0, fillColor: color, fillOpacity: 0.14 + ratio * 0.18 }}
+              pathOptions={{
+                color,
+                weight: 0,
+                fillColor: color,
+                fillOpacity: 0.14 + ratio * 0.18,
+                className: "heatmap-pulse-outer",
+              }}
             />
             <Circle
               center={[item.lat, item.lng]}
               radius={innerRadius}
-              pathOptions={{ color, weight: 0, fillColor: color, fillOpacity: 0.22 + ratio * 0.24 }}
+              pathOptions={{
+                color,
+                weight: 0,
+                fillColor: color,
+                fillOpacity: 0.26 + ratio * 0.24,
+                className: "heatmap-pulse-inner",
+              }}
             >
               <Popup>
                 <div style={{ minWidth: 140 }}>
@@ -540,7 +605,7 @@ function HeatmapLayer({ reports }: { reports: any[] }) {
   );
 }
 
-function TrashMap() {
+export default function TrashMap() {
   const [nickname, setNickname] = useState("");
   const [nicknameInput, setNicknameInput] = useState("");
   const [adminCode, setAdminCode] = useState("");
@@ -593,7 +658,10 @@ function TrashMap() {
       reportsRef,
       (snapshot) => {
         const data = snapshot.val();
-        if (!data) return setReports([]);
+        if (!data) {
+          setReports([]);
+          return;
+        }
         const items = Object.entries(data).map(([id, value]: any) => ({ id, ...value }));
         items.sort((a: any, b: any) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setReports(items);
@@ -608,15 +676,22 @@ function TrashMap() {
 
   useEffect(() => {
     if (!navigator.geolocation) return;
+
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setCurrentLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
       },
       () => {},
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     );
+
     return () => {
-      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
     };
   }, []);
 
@@ -646,8 +721,10 @@ function TrashMap() {
   }, [reports]);
 
   const activityData = useMemo(() => {
-    const todayCount = reports.filter((r) => (r.createdAtMs || 0) >= getStartOfToday()).length;
-    const weekCount = reports.filter((r) => (r.createdAtMs || 0) >= getStartOfWeek()).length;
+    const startOfToday = getStartOfToday();
+    const startOfWeek = getStartOfWeek();
+    const todayCount = reports.filter((r) => (r.createdAtMs || 0) >= startOfToday).length;
+    const weekCount = reports.filter((r) => (r.createdAtMs || 0) >= startOfWeek).length;
     const myReports = reports.filter((r) => user && r.uid === user.uid);
     const myCount = myReports.length;
     const mySolved = myReports.filter((r) => r.status === "solved").length;
@@ -655,13 +732,28 @@ function TrashMap() {
     const ranking = buildRanking(reports);
     const totalUsers = ranking.length;
     const myRank = ranking.findIndex((item) => item.name === nickname) + 1;
-    return { todayCount, weekCount, myCount, mySolved, badge, ranking, totalUsers, myRank: myRank || 0 };
+    return {
+      todayCount,
+      weekCount,
+      myCount,
+      mySolved,
+      badge,
+      ranking,
+      totalUsers,
+      myRank: myRank || 0,
+    };
   }, [reports, user, nickname]);
 
   const resetForm = () => {
     setEditingReportId(null);
     setMiniMapTarget(null);
-    setFormData({ category: "cup", area: AREAS[0], description: "", image: "", location: null });
+    setFormData({
+      category: "cup",
+      area: AREAS[0],
+      description: "",
+      image: "",
+      location: null,
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -674,9 +766,13 @@ function TrashMap() {
   const handleJoin = (e: any) => {
     e.preventDefault();
     const value = nicknameInput.trim();
-    if (!value) return setMessage("학번-이름을 입력해 주세요.");
+    if (!value) {
+      setMessage("학번-이름을 입력해 주세요.");
+      return;
+    }
     if (value.toLowerCase() === ADMIN_NAME && adminCode !== ADMIN_CODE) {
-      return setMessage("관리자 코드가 올바르지 않습니다.");
+      setMessage("관리자 코드가 올바르지 않습니다.");
+      return;
     }
     localStorage.setItem(NAME_KEY, value);
     localStorage.setItem(ADMIN_KEY, adminCode);
@@ -694,13 +790,18 @@ function TrashMap() {
     setSavedAdminCode("");
     setShowAddSheet(false);
     resetForm();
-    try { await signOut(auth); } catch {}
+    try {
+      await signOut(auth);
+    } catch {}
     setMessage("로그아웃 되었습니다.");
   };
 
   const handleStartEdit = (report: any) => {
     const isOwner = !!user && report.uid === user.uid;
-    if (!isAdmin && !isOwner) return setMessage("수정 권한이 없습니다.");
+    if (!isAdmin && !isOwner) {
+      setMessage("수정 권한이 없습니다.");
+      return;
+    }
     setEditingReportId(report.id);
     setMiniMapTarget(report.location || null);
     setFormData({
@@ -714,7 +815,10 @@ function TrashMap() {
   };
 
   const handleCurrentLocation = () => {
-    if (!navigator.geolocation) return setMessage("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
+    if (!navigator.geolocation) {
+      setMessage("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -731,7 +835,10 @@ function TrashMap() {
   const handleImageChange = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return setMessage("이미지 파일만 올릴 수 있습니다.");
+    if (!file.type.startsWith("image/")) {
+      setMessage("이미지 파일만 올릴 수 있습니다.");
+      return;
+    }
     try {
       const compressed = await compressImage(file);
       setFormData((prev) => ({ ...prev, image: compressed }));
@@ -742,9 +849,18 @@ function TrashMap() {
   };
 
   const handleSave = async () => {
-    if (!nickname) return setMessage("학번-이름이 필요합니다.");
-    if (!user) return setMessage("로그인 연결 중입니다. 잠시 후 다시 시도해 주세요.");
-    if (!formData.location) return setMessage("작은 지도에서 위치를 한 번 눌러 주세요.");
+    if (!nickname) {
+      setMessage("학번-이름이 필요합니다.");
+      return;
+    }
+    if (!user) {
+      setMessage("로그인 연결 중입니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+    if (!formData.location) {
+      setMessage("작은 지도에서 위치를 한 번 눌러 주세요.");
+      return;
+    }
 
     const payload = {
       category: formData.category,
@@ -756,11 +872,22 @@ function TrashMap() {
 
     if (editingReportId) {
       const target = reports.find((r) => r.id === editingReportId);
-      if (!target) return setMessage("수정할 기록을 찾을 수 없습니다.");
+      if (!target) {
+        setMessage("수정할 기록을 찾을 수 없습니다.");
+        return;
+      }
+
       const isOwner = !!user && target.uid === user.uid;
-      if (!isAdmin && !isOwner) return setMessage("수정 권한이 없습니다.");
+      if (!isAdmin && !isOwner) {
+        setMessage("수정 권한이 없습니다.");
+        return;
+      }
+
       try {
-        await update(ref(db, `${REPORTS_PATH}/${editingReportId}`), { ...payload, updatedAtMs: Date.now() });
+        await update(ref(db, `${REPORTS_PATH}/${editingReportId}`), {
+          ...payload,
+          updatedAtMs: Date.now(),
+        });
         resetForm();
         setShowAddSheet(false);
         setMessage("수정이 완료되었습니다.");
@@ -770,7 +897,14 @@ function TrashMap() {
       return;
     }
 
-    const reportData = { uid: user.uid, userName: nickname, ...payload, status: "pending", createdAtMs: Date.now() };
+    const reportData = {
+      uid: user.uid,
+      userName: nickname,
+      ...payload,
+      status: "pending",
+      createdAtMs: Date.now(),
+    };
+
     try {
       await push(ref(db, REPORTS_PATH), reportData);
       resetForm();
@@ -859,7 +993,9 @@ function TrashMap() {
                 placeholder="관리자 코드 (관리자만 입력)"
                 style={styles.joinInput}
               />
-              <button type="submit" style={styles.joinButton}>프로젝트 합류하기 ›</button>
+              <button type="submit" style={styles.joinButton}>
+                프로젝트 합류하기 ›
+              </button>
             </form>
           </div>
         </div>
@@ -877,7 +1013,7 @@ function TrashMap() {
         {activeTab === "map" && (
           <div style={styles.mapPage}>
             <div style={styles.fullMapWrap}>
-              <MapContainer key={`main-map-${activeTab}`} center={DEFAULT_CENTER} zoom={14} style={styles.mapContainer} preferCanvas>
+              <MapContainer key={`main-map-${activeTab}`} center={DEFAULT_CENTER} zoom={14} style={styles.mapContainer} preferCanvas={true}>
                 <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <MapSizeFixer />
                 <CurrentLocationMarker currentLocation={currentLocation} />
@@ -899,7 +1035,10 @@ function TrashMap() {
               </MapContainer>
 
               <button
-                style={{ ...styles.heatmapToggle, ...(heatmapOn ? styles.heatmapToggleOn : styles.heatmapToggleOff) }}
+                style={{
+                  ...styles.heatmapToggle,
+                  ...(heatmapOn ? styles.heatmapToggleOn : styles.heatmapToggleOff),
+                }}
                 onClick={() => setHeatmapOn((prev) => !prev)}
               >
                 {heatmapOn ? "🔴 히트맵 ON" : "🟡 히트맵 OFF"}
@@ -931,11 +1070,14 @@ function TrashMap() {
                 const canEdit = isAdmin || isOwner;
                 const statusButtonStyle = report.status === "solved" ? styles.statusSolved : styles.statusPending;
                 const statusLabel = report.status === "solved" ? "해결됨 ✓" : "진행중";
+
                 return (
                   <div key={report.id} style={styles.feedCard}>
                     <div style={styles.feedCardTop}>
                       <div style={styles.areaBadge}>{cat.icon} {report.area}</div>
-                      <button onClick={() => handleToggleStatus(report)} style={statusButtonStyle}>{statusLabel}</button>
+                      <button onClick={() => handleToggleStatus(report)} style={statusButtonStyle}>
+                        {statusLabel}
+                      </button>
                     </div>
                     {report.image ? <img src={report.image} alt="record" style={styles.feedImage} /> : null}
                     <div style={styles.feedText}>{report.description || "내용 없음"}</div>
@@ -986,7 +1128,7 @@ function TrashMap() {
                 ))}
               </div>
             </div>
-            {isAdmin ? (
+            {isAdmin && (
               <div style={styles.adminCard}>
                 <div style={styles.adminTitle}>⚠ ADMIN TOOLS</div>
                 <div style={styles.adminDesc}>
@@ -996,7 +1138,7 @@ function TrashMap() {
                 </div>
                 <button onClick={handleClearAll} style={styles.adminButton}>데이터 전체 초기화</button>
               </div>
-            ) : null}
+            )}
           </div>
         )}
 
@@ -1037,7 +1179,9 @@ function TrashMap() {
               </div>
               <div style={styles.smallStatBox}>
                 <div style={styles.smallStatTitle}>MY RANK</div>
-                <div style={{ ...styles.smallStatNumber, color: NAVY }}>{activityData.myRank ? `${activityData.myRank}위` : "-"}</div>
+                <div style={{ ...styles.smallStatNumber, color: NAVY }}>
+                  {activityData.myRank ? `${activityData.myRank}위` : "-"}
+                </div>
               </div>
             </div>
             <div style={styles.rankingWrap}>
@@ -1068,7 +1212,7 @@ function TrashMap() {
 
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {showAddSheet ? (
+      {showAddSheet && (
         <div style={styles.sheetBackdrop}>
           <div style={styles.addSheet}>
             <div style={styles.sheetHeader}>
@@ -1135,8 +1279,14 @@ function TrashMap() {
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
             </div>
 
-            <select value={formData.area} onChange={(e) => setFormData((prev) => ({ ...prev, area: e.target.value }))} style={styles.selectBox}>
-              {AREAS.map((area) => <option key={area} value={area}>{area}</option>)}
+            <select
+              value={formData.area}
+              onChange={(e) => setFormData((prev) => ({ ...prev, area: e.target.value }))}
+              style={styles.selectBox}
+            >
+              {AREAS.map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
             </select>
 
             <div style={styles.categoryGrid}>
@@ -1148,9 +1298,10 @@ function TrashMap() {
                   style={{
                     ...styles.categoryCard,
                     borderColor: formData.category === cat.id ? GREEN : "#edf2ee",
-                    boxShadow: formData.category === cat.id
-                      ? "inset 0 0 0 1px rgba(244,179,33,0.25)"
-                      : "0 8px 18px rgba(0,0,0,0.04)",
+                    boxShadow:
+                      formData.category === cat.id
+                        ? "inset 0 0 0 1px rgba(244,179,33,0.25)"
+                        : "0 8px 18px rgba(0,0,0,0.04)",
                   }}
                 >
                   <span style={{ fontSize: 20 }}>{cat.icon}</span>
@@ -1168,19 +1319,21 @@ function TrashMap() {
 
             <button
               onClick={handleSave}
-              style={{ ...styles.uploadButton, opacity: user ? 1 : 0.5, cursor: user ? "pointer" : "not-allowed" }}
+              style={{
+                ...styles.uploadButton,
+                opacity: user ? 1 : 0.5,
+                cursor: user ? "pointer" : "not-allowed",
+              }}
               disabled={!user}
             >
               {user ? (editingReportId ? "수정 내용 저장" : "지도에 업로드") : "로그인 연결 중..."}
             </button>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
-
-export default TrashMap;
 
 const globalCss = `
   html, body, #root {
@@ -1192,8 +1345,13 @@ const globalCss = `
     background: ${BG};
   }
 
-  * { box-sizing: border-box; }
-  button, input, textarea, select { font: inherit; }
+  * {
+    box-sizing: border-box;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+  }
 
   .leaflet-container {
     width: 100%;
@@ -1225,6 +1383,28 @@ const globalCss = `
     border: none !important;
   }
 
+  .heatmap-pulse-outer {
+    animation: heatOuterPulse 2.8s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  .heatmap-pulse-inner {
+    animation: heatInnerPulse 2s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  @keyframes heatOuterPulse {
+    0% { opacity: 0.72; }
+    50% { opacity: 1; }
+    100% { opacity: 0.72; }
+  }
+
+  @keyframes heatInnerPulse {
+    0% { opacity: 0.78; }
+    50% { opacity: 1; }
+    100% { opacity: 0.78; }
+  }
+
   @keyframes daisySway {
     0% { transform: rotate(0deg) translateY(0px); }
     25% { transform: rotate(-3deg) translateY(0px); }
@@ -1240,104 +1420,850 @@ const globalCss = `
 `;
 
 const styles: any = {
-  appShell: { width: "100%", height: "100vh", background: BG, display: "flex", flexDirection: "column", overflow: "hidden" },
-  joinScreen: { width: "100%", height: "100vh", background: "radial-gradient(circle at top center, rgba(244,179,33,0.10), transparent 32%), #fefce8", overflowY: "auto" },
-  joinWrap: { minHeight: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "30px 16px 42px" },
-  projectBadge: { padding: "10px 22px", borderRadius: 999, background: "#fff6de", color: "#b2875f", fontSize: 14, fontWeight: 700, marginBottom: 22, boxShadow: "0 2px 8px rgba(0,0,0,0.03)" },
-  heroBrand: { display: "flex", alignItems: "center", gap: 12, marginBottom: 10 },
-  heroTitleBlock: { display: "flex", flexDirection: "column", alignItems: "flex-start" },
-  joinTitle: { fontSize: 34, fontWeight: 900, color: NAVY, letterSpacing: "-0.04em", lineHeight: 1.05, marginBottom: 4 },
-  projectSubTitle: { fontSize: 18, fontWeight: 800, color: "#b2875f" },
-  meaningText: { fontSize: 16, fontWeight: 800, color: NAVY },
-  joinGuide: { textAlign: "center", color: LIGHT_TEXT, lineHeight: 1.6, fontSize: 15, fontWeight: 700, marginTop: 10, marginBottom: 22 },
-  joinCard: { width: "100%", maxWidth: 640, background: "white", borderRadius: 36, marginTop: 6, padding: "28px 22px 22px", boxShadow: "0 18px 36px rgba(0,0,0,0.08)", border: `1px solid ${BORDER}` },
-  joinCardTitle: { textAlign: "center", color: NAVY, fontWeight: 900, fontSize: 28, letterSpacing: "-0.04em", marginBottom: 8 },
-  joinCardSub: { textAlign: "center", color: LIGHT_TEXT, lineHeight: 1.5, fontSize: 15, fontWeight: 700, marginBottom: 18 },
-  joinInput: { width: "100%", background: BG, border: `2px solid ${BORDER}`, borderRadius: 22, padding: "18px 14px", fontSize: 18, fontWeight: 800, color: "#6b7280", outline: "none", textAlign: "center", marginBottom: 14 },
-  joinButton: { width: "100%", border: "none", borderRadius: 24, padding: "20px 18px", background: GREEN, color: "white", fontWeight: 900, fontSize: 22, display: "flex", justifyContent: "center", alignItems: "center", gap: 10, boxShadow: "0 12px 24px rgba(244,179,33,0.22)", cursor: "pointer" },
-  headerBar: { height: 72, background: "white", borderBottom: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 12px", flexShrink: 0 },
-  adminPill: { minWidth: 88, height: 40, borderRadius: 999, border: `1px solid ${BORDER}`, color: NAVY, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", background: SOFT_BG, fontSize: 14, padding: "0 14px" },
-  userPill: { minWidth: 88, height: 40, borderRadius: 999, border: `1px solid ${BORDER}`, color: NAVY, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", background: SOFT_BG, padding: "0 12px", fontSize: 13, maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  logoutButton: { width: 30, height: 30, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" },
-  mainArea: { flex: 1, minHeight: 0, position: "relative", overflow: "hidden", paddingBottom: 84 },
-  mapPage: { position: "relative", width: "100%", height: "100%", minHeight: 0 },
-  fullMapWrap: { width: "100%", height: "100%", position: "relative" },
-  mapContainer: { width: "100%", height: "100%", minHeight: "100%" },
-  heatmapToggle: { position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 98, border: "none", borderRadius: 999, padding: "10px 16px", fontWeight: 900, fontSize: 13, boxShadow: "0 10px 22px rgba(0,0,0,0.10)", cursor: "pointer", zIndex: 600 },
-  heatmapToggleOff: { background: "#fff7cc", color: NAVY },
-  heatmapToggleOn: { background: "#f97316", color: "white" },
-  recordFab: { position: "absolute", left: "50%", bottom: 28, transform: "translateX(-50%)", border: "none", background: NAVY, color: "white", fontSize: 17, fontWeight: 900, padding: "18px 32px", borderRadius: 999, boxShadow: "0 14px 28px rgba(146,64,14,0.22)", cursor: "pointer", zIndex: 500 },
-  pageWrap: { width: "100%", height: "100%", overflowY: "auto", padding: "20px 16px 108px", background: BG },
-  pageHeading: { color: NAVY, fontWeight: 900, fontSize: 28, letterSpacing: "-0.03em", marginBottom: 20 },
-  emptyFeed: { color: "#d6b37c", textAlign: "center", marginTop: 150, fontWeight: 900, fontSize: 22 },
-  feedCard: { background: "white", borderRadius: 28, padding: 18, marginBottom: 14, border: `1px solid ${BORDER}`, boxShadow: "0 8px 18px rgba(0,0,0,0.05)" },
-  feedCardTop: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12 },
-  areaBadge: { display: "inline-flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 900, color: NAVY, padding: "7px 10px", background: SOFT_BG, borderRadius: 999, border: `1px solid ${BORDER}` },
-  statusSolved: { border: "none", background: GREEN, color: "white", fontWeight: 900, fontSize: 10, padding: "7px 10px", borderRadius: 999, cursor: "pointer" },
-  statusPending: { border: "none", background: "#f8f4ea", color: "#bcaea0", fontWeight: 900, fontSize: 10, padding: "7px 10px", borderRadius: 999, cursor: "pointer" },
-  feedImage: { width: "100%", height: 170, objectFit: "cover", borderRadius: 20, marginBottom: 12, border: "1px solid #f7ebd4" },
-  feedText: { color: "#5f4a34", fontSize: 15, lineHeight: 1.55, fontWeight: 700, marginBottom: 14, padding: "0 2px" },
-  feedFooter: { display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #f8efdf", paddingTop: 12 },
-  feedUser: { color: "#a88d6e", fontWeight: 800, fontSize: 12 },
-  feedActions: { display: "flex", gap: 8 },
-  editButton: { border: "none", background: "#fff8ea", color: NAVY, fontWeight: 900, fontSize: 13, borderRadius: 12, padding: "8px 12px", cursor: "pointer" },
-  deleteButton: { border: "none", background: "transparent", color: "#ef9a9a", fontWeight: 900, fontSize: 13, cursor: "pointer" },
-  badgeHero: { display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg, #fffdf5 0%, #fff7dd 100%)", border: `1px solid ${BORDER}`, borderRadius: 26, padding: "18px 16px", boxShadow: "0 10px 24px rgba(0,0,0,0.05)", marginBottom: 14 },
-  badgeEmoji: { width: 54, height: 54, borderRadius: 18, background: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 8px 18px rgba(0,0,0,0.05)", flexShrink: 0 },
-  badgeTitle: { color: NAVY, fontSize: 18, fontWeight: 900 },
-  badgeDesc: { marginTop: 6, color: LIGHT_TEXT, fontSize: 13, fontWeight: 700, lineHeight: 1.5 },
-  totalBox: { background: NAVY, borderRadius: 40, padding: "34px 16px 24px", textAlign: "center", boxShadow: "0 14px 28px rgba(146,64,14,0.18)", marginBottom: 18 },
-  totalNumber: { color: "white", fontWeight: 900, fontSize: 72, lineHeight: 1, marginBottom: 8 },
-  totalLabel: { color: GREEN, fontWeight: 900, letterSpacing: "0.12em", fontSize: 13 },
-  statRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 },
-  smallStatBox: { background: "white", borderRadius: 26, padding: "24px 14px", textAlign: "center", boxShadow: "0 8px 18px rgba(0,0,0,0.05)" },
-  smallStatTitle: { color: "#bda790", fontSize: 12, fontWeight: 900, marginBottom: 14 },
-  smallStatNumber: { fontSize: 42, fontWeight: 900, lineHeight: 1 },
-  categoryStatsWrap: { background: "white", borderRadius: 28, padding: "20px 16px", boxShadow: "0 8px 18px rgba(0,0,0,0.05)", marginBottom: 20 },
-  categoryStatsTitle: { color: NAVY, fontWeight: 900, fontSize: 18, marginBottom: 14 },
-  categoryStatsGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 },
-  categoryStatCard: { background: "#fffdf6", border: `1px solid ${BORDER}`, borderRadius: 20, padding: "14px 12px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 118, justifyContent: "center" },
-  categoryStatIcon: { width: 42, height: 42, borderRadius: 14, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10, boxShadow: "0 8px 16px rgba(0,0,0,0.10)" },
-  categoryStatLabel: { color: NAVY, fontSize: 12, fontWeight: 800, marginBottom: 6, lineHeight: 1.35, minHeight: 32, display: "flex", alignItems: "center", justifyContent: "center" },
-  categoryStatCount: { color: GREEN, fontSize: 24, fontWeight: 900, lineHeight: 1 },
-  rankingWrap: { marginTop: 16, background: "white", borderRadius: 28, padding: 16, border: `1px solid ${BORDER}`, boxShadow: "0 8px 18px rgba(0,0,0,0.05)" },
-  rankingTitle: { color: NAVY, fontSize: 18, fontWeight: 900, marginBottom: 12 },
-  rankingEmpty: { color: LIGHT_TEXT, fontSize: 14, fontWeight: 700, textAlign: "center", padding: "18px 0" },
-  rankingItem: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 8px", borderBottom: "1px solid #f7ebd4" },
-  rankingLeft: { display: "flex", alignItems: "center", gap: 12, minWidth: 0 },
-  rankingIndex: { width: 32, height: 32, borderRadius: 12, background: "#fff8ea", color: NAVY, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, flexShrink: 0 },
-  rankingName: { color: NAVY, fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 },
-  rankingBadge: { marginTop: 4, color: LIGHT_TEXT, fontSize: 12, fontWeight: 800 },
-  rankingRight: { textAlign: "right", flexShrink: 0 },
-  rankingCount: { color: NAVY, fontSize: 22, fontWeight: 900, lineHeight: 1 },
-  rankingLabel: { marginTop: 4, color: LIGHT_TEXT, fontSize: 11, fontWeight: 900, letterSpacing: "0.04em" },
-  adminCard: { background: "#fffdf8", borderRadius: 32, border: "2px dashed #f3dddd", padding: "30px 18px 22px", textAlign: "center", boxShadow: "0 8px 18px rgba(0,0,0,0.03)" },
-  adminTitle: { color: "#f08a8a", fontWeight: 900, fontSize: 24, marginBottom: 12 },
-  adminDesc: { color: "#b99b7f", fontWeight: 800, lineHeight: 1.45, fontSize: 13, marginBottom: 18 },
-  adminButton: { width: "100%", border: "none", background: "#ea8f8f", color: "white", fontWeight: 900, fontSize: 18, borderRadius: 22, padding: "18px 16px", cursor: "pointer" },
-  bottomNav: { position: "fixed", left: 0, right: 0, bottom: 0, height: 82, background: "white", borderTop: `1px solid ${BORDER}`, display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", alignItems: "center", flexShrink: 0, paddingBottom: 4, zIndex: 40 },
-  navItemButton: { border: "none", background: "transparent", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, cursor: "pointer" },
-  navLabel: { fontSize: 12, fontWeight: 900 },
-  sheetBackdrop: { position: "fixed", inset: 0, background: "rgba(69,26,3,0.18)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 4000 },
-  addSheet: { position: "relative", width: "100%", maxWidth: 800, maxHeight: "88vh", overflowY: "auto", background: BG, borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: "18px 14px 22px", boxShadow: "0 -14px 36px rgba(0,0,0,0.16)", zIndex: 4001 },
-  sheetHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
-  sheetTitle: { color: NAVY, fontWeight: 900, fontSize: 20, letterSpacing: "-0.03em" },
-  closeButton: { width: 38, height: 38, borderRadius: 12, border: "1px solid #f8efdf", background: "white", fontSize: 18, cursor: "pointer" },
-  miniMapWrap: { height: 190, overflow: "hidden", borderRadius: 20, marginBottom: 8, boxShadow: "0 8px 18px rgba(0,0,0,0.06)" },
-  helpCopy: { color: "#a88d6e", fontSize: 12, fontWeight: 700, marginBottom: 12, textAlign: "center" },
-  topActionGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 },
-  actionCardDark: { height: 84, border: "none", borderRadius: 22, background: NAVY, color: "white", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, boxShadow: "0 8px 18px rgba(146,64,14,0.18)", cursor: "pointer" },
-  actionCardLabelWhite: { fontSize: 11, fontWeight: 900, color: "white" },
-  actionCardLightButton: { height: 84, borderRadius: 22, background: "white", border: `2px dashed ${BORDER}`, color: GREEN, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, boxShadow: "0 8px 16px rgba(0,0,0,0.04)", cursor: "pointer", overflow: "hidden", position: "relative" },
-  actionCardLabelGreen: { fontSize: 11, fontWeight: 900, color: GREEN },
-  previewWrap: { position: "relative", width: "100%", height: "100%" },
-  uploadPreview: { width: "100%", height: "100%", objectFit: "cover" },
-  removeImageButton: { position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.72)", color: "white", fontWeight: 900, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.18)" },
-  selectBox: { width: "100%", border: "2px solid #f5e8ca", background: "white", borderRadius: 18, padding: "14px 14px", fontSize: 15, fontWeight: 800, color: NAVY, marginBottom: 12, outline: "none" },
-  categoryGrid: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 },
-  categoryCard: { border: "2px solid #edf2ee", background: "white", borderRadius: 20, minHeight: 96, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 10px", cursor: "pointer" },
-  categoryCardText: { color: NAVY, fontSize: 12, fontWeight: 900, textAlign: "center", lineHeight: 1.35 },
-  textAreaBox: { width: "100%", minHeight: 120, borderRadius: 24, border: "2px solid #f6ead3", background: "white", padding: "16px 14px", fontSize: 15, color: NAVY, resize: "none", outline: "none", marginBottom: 14 },
-  uploadButton: { width: "100%", border: "none", background: GREEN, color: "white", fontWeight: 900, fontSize: 18, borderRadius: 24, padding: "20px 16px", cursor: "pointer", boxShadow: "0 14px 24px rgba(244,179,33,0.20)" },
-  toast: { position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", background: NAVY, color: "white", padding: "10px 18px", borderRadius: 14, zIndex: 5000, boxShadow: "0 12px 24px rgba(0,0,0,0.18)", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", maxWidth: "90vw", overflow: "hidden", textOverflow: "ellipsis" },
+  appShell: {
+    width: "100%",
+    height: "100vh",
+    background: BG,
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  },
+  joinScreen: {
+    width: "100%",
+    height: "100vh",
+    background: "radial-gradient(circle at top center, rgba(244,179,33,0.10), transparent 32%), #fefce8",
+    overflowY: "auto",
+  },
+  joinWrap: {
+    minHeight: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "30px 16px 42px",
+  },
+  projectBadge: {
+    padding: "10px 22px",
+    borderRadius: 999,
+    background: "#fff6de",
+    color: "#b2875f",
+    fontSize: 14,
+    fontWeight: 700,
+    marginBottom: 22,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+  },
+  heroBrand: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
+  heroTitleBlock: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  joinTitle: {
+    fontSize: 34,
+    fontWeight: 900,
+    color: NAVY,
+    letterSpacing: "-0.04em",
+    lineHeight: 1.05,
+    marginBottom: 4,
+  },
+  projectSubTitle: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: "#b2875f",
+  },
+  meaningText: {
+    fontSize: 16,
+    fontWeight: 800,
+    color: NAVY,
+  },
+  joinGuide: {
+    textAlign: "center",
+    color: LIGHT_TEXT,
+    lineHeight: 1.6,
+    fontSize: 15,
+    fontWeight: 700,
+    marginTop: 10,
+    marginBottom: 22,
+  },
+  joinCard: {
+    width: "100%",
+    maxWidth: 640,
+    background: "white",
+    borderRadius: 36,
+    marginTop: 6,
+    padding: "28px 22px 22px",
+    boxShadow: "0 18px 36px rgba(0,0,0,0.08)",
+    border: `1px solid ${BORDER}`,
+  },
+  joinCardTitle: {
+    textAlign: "center",
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 28,
+    letterSpacing: "-0.04em",
+    marginBottom: 8,
+  },
+  joinCardSub: {
+    textAlign: "center",
+    color: LIGHT_TEXT,
+    lineHeight: 1.5,
+    fontSize: 15,
+    fontWeight: 700,
+    marginBottom: 18,
+  },
+  joinInput: {
+    width: "100%",
+    background: BG,
+    border: `2px solid ${BORDER}`,
+    borderRadius: 22,
+    padding: "18px 14px",
+    fontSize: 18,
+    fontWeight: 800,
+    color: "#6b7280",
+    outline: "none",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+  joinButton: {
+    width: "100%",
+    border: "none",
+    borderRadius: 24,
+    padding: "20px 18px",
+    background: GREEN,
+    color: "white",
+    fontWeight: 900,
+    fontSize: 22,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    boxShadow: "0 12px 24px rgba(244,179,33,0.22)",
+    cursor: "pointer",
+  },
+  headerBar: {
+    height: 72,
+    background: "white",
+    borderBottom: `1px solid ${BORDER}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 12px",
+    flexShrink: 0,
+  },
+  adminPill: {
+    minWidth: 88,
+    height: 40,
+    borderRadius: 999,
+    border: `1px solid ${BORDER}`,
+    color: NAVY,
+    fontWeight: 800,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: SOFT_BG,
+    fontSize: 14,
+    padding: "0 14px",
+  },
+  userPill: {
+    minWidth: 88,
+    height: 40,
+    borderRadius: 999,
+    border: `1px solid ${BORDER}`,
+    color: NAVY,
+    fontWeight: 800,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: SOFT_BG,
+    padding: "0 12px",
+    fontSize: 13,
+    maxWidth: 150,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+  logoutButton: {
+    width: 30,
+    height: 30,
+    border: "none",
+    background: "transparent",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  },
+  mainArea: {
+    flex: 1,
+    minHeight: 0,
+    position: "relative",
+    overflow: "hidden",
+    paddingBottom: 84,
+  },
+  mapPage: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    minHeight: 0,
+  },
+  fullMapWrap: {
+    width: "100%",
+    height: "100%",
+    position: "relative",
+  },
+  mapContainer: {
+    width: "100%",
+    height: "100%",
+    minHeight: "100%",
+  },
+  heatmapToggle: {
+    position: "absolute",
+    left: 16,
+    bottom: 28,
+    border: "none",
+    borderRadius: 999,
+    padding: "10px 16px",
+    fontWeight: 900,
+    fontSize: 13,
+    boxShadow: "0 10px 22px rgba(0,0,0,0.10)",
+    cursor: "pointer",
+    zIndex: 600,
+  },
+  heatmapToggleOff: {
+    background: "#fff7cc",
+    color: NAVY,
+  },
+  heatmapToggleOn: {
+    background: "#f97316",
+    color: "white",
+  },
+  recordFab: {
+    position: "absolute",
+    right: 16,
+    bottom: 28,
+    border: "none",
+    background: NAVY,
+    color: "white",
+    fontSize: 17,
+    fontWeight: 900,
+    padding: "18px 28px",
+    borderRadius: 999,
+    boxShadow: "0 14px 28px rgba(146,64,14,0.22)",
+    cursor: "pointer",
+    zIndex: 500,
+  },
+  pageWrap: {
+    width: "100%",
+    height: "100%",
+    overflowY: "auto",
+    padding: "20px 16px 108px",
+    background: BG,
+  },
+  pageHeading: {
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 28,
+    letterSpacing: "-0.03em",
+    marginBottom: 20,
+  },
+  emptyFeed: {
+    color: "#d6b37c",
+    textAlign: "center",
+    marginTop: 150,
+    fontWeight: 900,
+    fontSize: 22,
+  },
+  feedCard: {
+    background: "white",
+    borderRadius: 28,
+    padding: 18,
+    marginBottom: 14,
+    border: `1px solid ${BORDER}`,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+  },
+  feedCardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  areaBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 11,
+    fontWeight: 900,
+    color: NAVY,
+    padding: "7px 10px",
+    background: SOFT_BG,
+    borderRadius: 999,
+    border: `1px solid ${BORDER}`,
+  },
+  statusSolved: {
+    border: "none",
+    background: GREEN,
+    color: "white",
+    fontWeight: 900,
+    fontSize: 10,
+    padding: "7px 10px",
+    borderRadius: 999,
+    cursor: "pointer",
+  },
+  statusPending: {
+    border: "none",
+    background: "#f8f4ea",
+    color: "#bcaea0",
+    fontWeight: 900,
+    fontSize: 10,
+    padding: "7px 10px",
+    borderRadius: 999,
+    cursor: "pointer",
+  },
+  feedImage: {
+    width: "100%",
+    height: 170,
+    objectFit: "cover",
+    borderRadius: 20,
+    marginBottom: 12,
+    border: "1px solid #f7ebd4",
+  },
+  feedText: {
+    color: "#5f4a34",
+    fontSize: 15,
+    lineHeight: 1.55,
+    fontWeight: 700,
+    marginBottom: 14,
+    padding: "0 2px",
+  },
+  feedFooter: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTop: "1px solid #f8efdf",
+    paddingTop: 12,
+  },
+  feedUser: {
+    color: "#a88d6e",
+    fontWeight: 800,
+    fontSize: 12,
+  },
+  feedActions: {
+    display: "flex",
+    gap: 8,
+  },
+  editButton: {
+    border: "none",
+    background: "#fff8ea",
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 13,
+    borderRadius: 12,
+    padding: "8px 12px",
+    cursor: "pointer",
+  },
+  deleteButton: {
+    border: "none",
+    background: "transparent",
+    color: "#ef9a9a",
+    fontWeight: 900,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  badgeHero: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    background: "linear-gradient(135deg, #fffdf5 0%, #fff7dd 100%)",
+    border: `1px solid ${BORDER}`,
+    borderRadius: 26,
+    padding: "18px 16px",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+    marginBottom: 14,
+  },
+  badgeEmoji: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    background: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 26,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+    flexShrink: 0,
+  },
+  badgeTitle: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: 900,
+  },
+  badgeDesc: {
+    marginTop: 6,
+    color: LIGHT_TEXT,
+    fontSize: 13,
+    fontWeight: 700,
+    lineHeight: 1.5,
+  },
+  totalBox: {
+    background: NAVY,
+    borderRadius: 40,
+    padding: "34px 16px 24px",
+    textAlign: "center",
+    boxShadow: "0 14px 28px rgba(146,64,14,0.18)",
+    marginBottom: 18,
+  },
+  totalNumber: {
+    color: "white",
+    fontWeight: 900,
+    fontSize: 72,
+    lineHeight: 1,
+    marginBottom: 8,
+  },
+  totalLabel: {
+    color: GREEN,
+    fontWeight: 900,
+    letterSpacing: "0.12em",
+    fontSize: 13,
+  },
+  statRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 14,
+    marginBottom: 20,
+  },
+  smallStatBox: {
+    background: "white",
+    borderRadius: 26,
+    padding: "24px 14px",
+    textAlign: "center",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+  },
+  smallStatTitle: {
+    color: "#bda790",
+    fontSize: 12,
+    fontWeight: 900,
+    marginBottom: 14,
+  },
+  smallStatNumber: {
+    fontSize: 42,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
+  categoryStatsWrap: {
+    background: "white",
+    borderRadius: 28,
+    padding: "20px 16px",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+    marginBottom: 20,
+  },
+  categoryStatsTitle: {
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 18,
+    marginBottom: 14,
+  },
+  categoryStatsGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 10,
+  },
+  categoryStatCard: {
+    background: "#fffdf6",
+    border: `1px solid ${BORDER}`,
+    borderRadius: 20,
+    padding: "14px 12px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    minHeight: 118,
+    justifyContent: "center",
+  },
+  categoryStatIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 20,
+    marginBottom: 10,
+    boxShadow: "0 8px 16px rgba(0,0,0,0.10)",
+  },
+  categoryStatLabel: {
+    color: NAVY,
+    fontSize: 12,
+    fontWeight: 800,
+    marginBottom: 6,
+    lineHeight: 1.35,
+    minHeight: 32,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  categoryStatCount: {
+    color: GREEN,
+    fontSize: 24,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
+  rankingWrap: {
+    marginTop: 16,
+    background: "white",
+    borderRadius: 28,
+    padding: 16,
+    border: `1px solid ${BORDER}`,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+  },
+  rankingTitle: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: 900,
+    marginBottom: 12,
+  },
+  rankingEmpty: {
+    color: LIGHT_TEXT,
+    fontSize: 14,
+    fontWeight: 700,
+    textAlign: "center",
+    padding: "18px 0",
+  },
+  rankingItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    padding: "14px 8px",
+    borderBottom: "1px solid #f7ebd4",
+  },
+  rankingLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    minWidth: 0,
+  },
+  rankingIndex: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    background: "#fff8ea",
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 900,
+    fontSize: 14,
+    flexShrink: 0,
+  },
+  rankingName: {
+    color: NAVY,
+    fontSize: 15,
+    fontWeight: 900,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: 180,
+  },
+  rankingBadge: {
+    marginTop: 4,
+    color: LIGHT_TEXT,
+    fontSize: 12,
+    fontWeight: 800,
+  },
+  rankingRight: {
+    textAlign: "right",
+    flexShrink: 0,
+  },
+  rankingCount: {
+    color: NAVY,
+    fontSize: 22,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
+  rankingLabel: {
+    marginTop: 4,
+    color: LIGHT_TEXT,
+    fontSize: 11,
+    fontWeight: 900,
+    letterSpacing: "0.04em",
+  },
+  adminCard: {
+    background: "#fffdf8",
+    borderRadius: 32,
+    border: "2px dashed #f3dddd",
+    padding: "30px 18px 22px",
+    textAlign: "center",
+    boxShadow: "0 8px 18px rgba(0,0,0,0.03)",
+  },
+  adminTitle: {
+    color: "#f08a8a",
+    fontWeight: 900,
+    fontSize: 24,
+    marginBottom: 12,
+  },
+  adminDesc: {
+    color: "#b99b7f",
+    fontWeight: 800,
+    lineHeight: 1.45,
+    fontSize: 13,
+    marginBottom: 18,
+  },
+  adminButton: {
+    width: "100%",
+    border: "none",
+    background: "#ea8f8f",
+    color: "white",
+    fontWeight: 900,
+    fontSize: 18,
+    borderRadius: 22,
+    padding: "18px 16px",
+    cursor: "pointer",
+  },
+  bottomNav: {
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 82,
+    background: "white",
+    borderTop: `1px solid ${BORDER}`,
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr",
+    alignItems: "center",
+    flexShrink: 0,
+    paddingBottom: 4,
+    zIndex: 40,
+  },
+  navItemButton: {
+    border: "none",
+    background: "transparent",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 3,
+    cursor: "pointer",
+  },
+  navLabel: {
+    fontSize: 12,
+    fontWeight: 900,
+  },
+  sheetBackdrop: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(69,26,3,0.18)",
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    zIndex: 4000,
+  },
+  addSheet: {
+    position: "relative",
+    width: "100%",
+    maxWidth: 800,
+    maxHeight: "88vh",
+    overflowY: "auto",
+    background: BG,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: "18px 14px 22px",
+    boxShadow: "0 -14px 36px rgba(0,0,0,0.16)",
+    zIndex: 4001,
+  },
+  sheetHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  sheetTitle: {
+    color: NAVY,
+    fontWeight: 900,
+    fontSize: 20,
+    letterSpacing: "-0.03em",
+  },
+  closeButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    border: "1px solid #f8efdf",
+    background: "white",
+    fontSize: 18,
+    cursor: "pointer",
+  },
+  miniMapWrap: {
+    height: 190,
+    overflow: "hidden",
+    borderRadius: 20,
+    marginBottom: 8,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.06)",
+  },
+  helpCopy: {
+    color: "#a88d6e",
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  topActionGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 12,
+    marginBottom: 12,
+  },
+  actionCardDark: {
+    height: 84,
+    border: "none",
+    borderRadius: 22,
+    background: NAVY,
+    color: "white",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    boxShadow: "0 8px 18px rgba(146,64,14,0.18)",
+    cursor: "pointer",
+  },
+  actionCardLabelWhite: {
+    fontSize: 11,
+    fontWeight: 900,
+    color: "white",
+  },
+  actionCardLightButton: {
+    height: 84,
+    borderRadius: 22,
+    background: "white",
+    border: `2px dashed ${BORDER}`,
+    color: GREEN,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    boxShadow: "0 8px 16px rgba(0,0,0,0.04)",
+    cursor: "pointer",
+    overflow: "hidden",
+    position: "relative",
+  },
+  actionCardLabelGreen: {
+    fontSize: 11,
+    fontWeight: 900,
+    color: GREEN,
+  },
+  previewWrap: {
+    position: "relative",
+    width: "100%",
+    height: "100%",
+  },
+  uploadPreview: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 26,
+    height: 26,
+    borderRadius: "50%",
+    border: "none",
+    background: "rgba(0,0,0,0.72)",
+    color: "white",
+    fontWeight: 900,
+    fontSize: 14,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.18)",
+  },
+  selectBox: {
+    width: "100%",
+    border: "2px solid #f5e8ca",
+    background: "white",
+    borderRadius: 18,
+    padding: "14px 14px",
+    fontSize: 15,
+    fontWeight: 800,
+    color: NAVY,
+    marginBottom: 12,
+    outline: "none",
+  },
+  categoryGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 10,
+    marginBottom: 12,
+  },
+  categoryCard: {
+    border: "2px solid #edf2ee",
+    background: "white",
+    borderRadius: 20,
+    minHeight: 96,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: "12px 10px",
+    cursor: "pointer",
+  },
+  categoryCardText: {
+    color: NAVY,
+    fontSize: 12,
+    fontWeight: 900,
+    textAlign: "center",
+    lineHeight: 1.35,
+  },
+  textAreaBox: {
+    width: "100%",
+    minHeight: 120,
+    borderRadius: 24,
+    border: "2px solid #f6ead3",
+    background: "white",
+    padding: "16px 14px",
+    fontSize: 15,
+    color: NAVY,
+    resize: "none",
+    outline: "none",
+    marginBottom: 14,
+  },
+  uploadButton: {
+    width: "100%",
+    border: "none",
+    background: GREEN,
+    color: "white",
+    fontWeight: 900,
+    fontSize: 18,
+    borderRadius: 24,
+    padding: "20px 16px",
+    cursor: "pointer",
+    boxShadow: "0 14px 24px rgba(244,179,33,0.20)",
+  },
+  toast: {
+    position: "fixed",
+    top: 14,
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: NAVY,
+    color: "white",
+    padding: "10px 18px",
+    borderRadius: 14,
+    zIndex: 5000,
+    boxShadow: "0 12px 24px rgba(0,0,0,0.18)",
+    fontWeight: 800,
+    fontSize: 14,
+    whiteSpace: "nowrap",
+    maxWidth: "90vw",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
 };
