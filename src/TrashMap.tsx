@@ -20,9 +20,9 @@ const BORDER = "#fde68a";
 const LIGHT_TEXT = "#b2875f";
 const SOFT_BG = "#fff8dc";
 
-const NAME_KEY = "mulgeum_daisy_name_v2";
-const ADMIN_KEY = "mulgeum_daisy_admin_code_v2";
-const REPORTS_PATH = "mulgeum_daisy_reports_v2";
+const NAME_KEY = "mulgeum_daisy_name_v3";
+const ADMIN_KEY = "mulgeum_daisy_admin_code_v3";
+const REPORTS_PATH = "mulgeum_daisy_reports_v3";
 
 const DEFAULT_CENTER: [number, number] = [35.327, 129.007];
 const ADMIN_NAME = "admin";
@@ -128,23 +128,15 @@ function makeCurrentLocationIcon() {
 
 function MapSizeFixer() {
   const map = useMap();
-
   useEffect(() => {
-    const refresh = () => {
-      try {
-        map.invalidateSize(true);
-      } catch {}
-    };
-
+    const refresh = () => { try { map.invalidateSize(true); } catch {} };
     const timers = [100, 500, 1000, 1800].map((t) => setTimeout(refresh, t));
     window.addEventListener("resize", refresh);
-
     return () => {
       timers.forEach(clearTimeout);
       window.removeEventListener("resize", refresh);
     };
   }, [map]);
-
   return null;
 }
 
@@ -156,7 +148,6 @@ function RecenterMap({
   zoom?: number;
 }) {
   const map = useMap();
-
   useEffect(() => {
     if (!targetLocation) return;
     map.flyTo([targetLocation.lat, targetLocation.lng], zoom, {
@@ -164,7 +155,6 @@ function RecenterMap({
       duration: 0.8,
     });
   }, [targetLocation, zoom, map]);
-
   return null;
 }
 
@@ -177,13 +167,11 @@ function InitialMapFollow({
 }) {
   const map = useMap();
   const hasMovedRef = useRef(false);
-
   useEffect(() => {
     if (!currentLocation || activeTab !== "map" || hasMovedRef.current) return;
     map.setView([currentLocation.lat, currentLocation.lng], 16, { animate: true });
     hasMovedRef.current = true;
   }, [currentLocation, activeTab, map]);
-
   return null;
 }
 
@@ -199,9 +187,7 @@ function ClickLocationPicker({
       onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
-
   if (!selectedLocation) return null;
-
   return (
     <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={makePickerIcon()}>
       <Popup>선택한 위치</Popup>
@@ -215,7 +201,6 @@ function CurrentLocationMarker({
   currentLocation: { lat: number; lng: number } | null;
 }) {
   if (!currentLocation) return null;
-
   return (
     <Marker position={[currentLocation.lat, currentLocation.lng]} icon={makeCurrentLocationIcon()}>
       <Popup>현재 위치</Popup>
@@ -223,13 +208,7 @@ function CurrentLocationMarker({
   );
 }
 
-function DaisyLogo({
-  size = 84,
-  animated = false,
-}: {
-  size?: number;
-  animated?: boolean;
-}) {
+function DaisyLogo({ size = 84, animated = false }: { size?: number; animated?: boolean }) {
   return (
     <div
       style={{
@@ -266,17 +245,9 @@ function DaisyLogo({
             transform={`rotate(${angle} 60 60)`}
           />
         ))}
-
         <circle cx="60" cy="60" r="14.5" fill="#f4b321" stroke="#c98909" strokeWidth="3" />
         <circle cx="55" cy="55" r="4" fill="#ffd86b" opacity="0.9" />
-
-        <path
-          d="M60 80 C60 90, 60 100, 60 110"
-          stroke="#8b6b3f"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-
+        <path d="M60 80 C60 90, 60 100, 60 110" stroke="#8b6b3f" strokeWidth="4" strokeLinecap="round" />
         <path
           d="M60 98 C70 92, 78 84, 80 76 C70 78, 62 86, 60 98 Z"
           fill="#a8b86a"
@@ -319,10 +290,7 @@ function DaisyCharFlower({ char }: { char: string }) {
         flexShrink: 0,
       }}
     >
-      <svg
-        viewBox="0 0 100 100"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-      >
+      <svg viewBox="0 0 100 100" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
           <ellipse
             key={angle}
@@ -431,6 +399,20 @@ function StatsNavIcon({ active }: { active: boolean }) {
   );
 }
 
+function ActivityNavIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 4L14.6 9.3L20.5 10.2L16.2 14.3L17.2 20.1L12 17.3L6.8 20.1L7.8 14.3L3.5 10.2L9.4 9.3L12 4Z"
+        stroke={active ? GREEN : "#c7cbd3"}
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        fill={active ? "rgba(244,179,33,0.14)" : "none"}
+      />
+    </svg>
+  );
+}
+
 function Header({
   nickname,
   isAdmin,
@@ -473,6 +455,7 @@ function BottomNav({
     { key: "map", label: "지도", icon: <MapNavIcon active={activeTab === "map"} /> },
     { key: "list", label: "피드", icon: <ListNavIcon active={activeTab === "list"} /> },
     { key: "stats", label: "통계", icon: <StatsNavIcon active={activeTab === "stats"} /> },
+    { key: "activity", label: "활동", icon: <ActivityNavIcon active={activeTab === "activity"} /> },
   ];
 
   return (
@@ -520,6 +503,48 @@ async function compressImage(file: File, maxWidth = 1280, maxHeight = 1280, qual
   return canvas.toDataURL("image/jpeg", quality);
 }
 
+function getStartOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+}
+
+function getStartOfWeek() {
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  start.setDate(start.getDate() + mondayOffset);
+  start.setHours(0, 0, 0, 0);
+  return start.getTime();
+}
+
+function getBadgeByCount(count: number) {
+  if (count >= 20) return { title: "데이지 마스터", emoji: "🏆", desc: "꾸준히 우리 동네를 지키는 최고 기록자" };
+  if (count >= 10) return { title: "환경 지킴이", emoji: "🌼", desc: "지속적으로 기록을 남기는 실천가" };
+  if (count >= 5) return { title: "그린 버디", emoji: "🍀", desc: "환경 기록 습관이 자리잡은 활동가" };
+  if (count >= 1) return { title: "데이지 새싹", emoji: "🌱", desc: "첫 실천을 시작한 멋진 참여자" };
+  return { title: "참여 준비중", emoji: "✨", desc: "첫 기록을 남기면 배지가 시작돼요" };
+}
+
+function buildRanking(reports: any[]) {
+  const userMap: Record<string, { name: string; count: number; solved: number }> = {};
+  reports.forEach((report) => {
+    const key = report.uid || report.userName || "unknown";
+    if (!userMap[key]) {
+      userMap[key] = { name: report.userName || "이름 없음", count: 0, solved: 0 };
+    }
+    userMap[key].count += 1;
+    if (report.status === "solved") userMap[key].solved += 1;
+  });
+
+  return Object.values(userMap)
+    .map((item) => ({ ...item, badge: getBadgeByCount(item.count) }))
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return b.solved - a.solved;
+    });
+}
+
 export default function TrashMap() {
   const [nickname, setNickname] = useState("");
   const [nicknameInput, setNicknameInput] = useState("");
@@ -563,7 +588,6 @@ export default function TrashMap() {
         }
       }
     });
-
     return () => unsub();
   }, []);
 
@@ -577,12 +601,7 @@ export default function TrashMap() {
           setReports([]);
           return;
         }
-
-        const items = Object.entries(data).map(([id, value]: any) => ({
-          id,
-          ...value,
-        }));
-
+        const items = Object.entries(data).map(([id, value]: any) => ({ id, ...value }));
         items.sort((a: any, b: any) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
         setReports(items);
       },
@@ -591,33 +610,23 @@ export default function TrashMap() {
         setMessage("실시간 데이터 연결에 실패했습니다.");
       }
     );
-
     return () => unsub();
   }, []);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
-
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        const next = {
+        setCurrentLocation({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-        };
-        setCurrentLocation(next);
+        });
       },
       () => {},
-      {
-        enableHighAccuracy: true,
-        maximumAge: 10000,
-        timeout: 15000,
-      }
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
     );
-
     return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
+      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
     };
   }, []);
 
@@ -629,34 +638,46 @@ export default function TrashMap() {
 
   useEffect(() => {
     if (showAddSheet && currentLocation) {
-      setFormData((prev) => ({
-        ...prev,
-        location: currentLocation,
-      }));
+      setFormData((prev) => ({ ...prev, location: currentLocation }));
       setMiniMapTarget(currentLocation);
     }
   }, [showAddSheet, currentLocation]);
 
-  const isAdmin =
-    nickname.trim().toLowerCase() === ADMIN_NAME &&
-    savedAdminCode === ADMIN_CODE;
+  const isAdmin = nickname.trim().toLowerCase() === ADMIN_NAME && savedAdminCode === ADMIN_CODE;
 
   const stats = useMemo(() => {
     const solved = reports.filter((r) => r.status === "solved").length;
     const pending = reports.length - solved;
-
     const categoryCounts = CATEGORIES.map((category) => ({
       ...category,
       count: reports.filter((r) => r.category === category.id).length,
     }));
-
-    return {
-      total: reports.length,
-      solved,
-      pending,
-      categoryCounts,
-    };
+    return { total: reports.length, solved, pending, categoryCounts };
   }, [reports]);
+
+  const activityData = useMemo(() => {
+    const startOfToday = getStartOfToday();
+    const startOfWeek = getStartOfWeek();
+    const todayCount = reports.filter((r) => (r.createdAtMs || 0) >= startOfToday).length;
+    const weekCount = reports.filter((r) => (r.createdAtMs || 0) >= startOfWeek).length;
+    const myReports = reports.filter((r) => user && r.uid === user.uid);
+    const myCount = myReports.length;
+    const mySolved = myReports.filter((r) => r.status === "solved").length;
+    const badge = getBadgeByCount(myCount);
+    const ranking = buildRanking(reports);
+    const totalUsers = ranking.length;
+    const myRank = ranking.findIndex((item) => item.name === nickname) + 1;
+    return {
+      todayCount,
+      weekCount,
+      myCount,
+      mySolved,
+      badge,
+      ranking,
+      totalUsers,
+      myRank: myRank || 0,
+    };
+  }, [reports, user, nickname]);
 
   const resetForm = () => {
     setEditingReportId(null);
@@ -680,17 +701,14 @@ export default function TrashMap() {
   const handleJoin = (e: any) => {
     e.preventDefault();
     const value = nicknameInput.trim();
-
     if (!value) {
       setMessage("학번-이름을 입력해 주세요.");
       return;
     }
-
     if (value.toLowerCase() === ADMIN_NAME && adminCode !== ADMIN_CODE) {
       setMessage("관리자 코드가 올바르지 않습니다.");
       return;
     }
-
     localStorage.setItem(NAME_KEY, value);
     localStorage.setItem(ADMIN_KEY, adminCode);
     setNickname(value);
@@ -707,11 +725,9 @@ export default function TrashMap() {
     setSavedAdminCode("");
     setShowAddSheet(false);
     resetForm();
-
     try {
       await signOut(auth);
     } catch {}
-
     setMessage("로그아웃 되었습니다.");
   };
 
@@ -721,7 +737,6 @@ export default function TrashMap() {
       setMessage("수정 권한이 없습니다.");
       return;
     }
-
     setEditingReportId(report.id);
     setMiniMapTarget(report.location || null);
     setFormData({
@@ -739,7 +754,6 @@ export default function TrashMap() {
       setMessage("이 브라우저에서는 위치 기능을 지원하지 않습니다.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const next = {
@@ -748,10 +762,7 @@ export default function TrashMap() {
         };
         setCurrentLocation(next);
         setMiniMapTarget(next);
-        setFormData((prev) => ({
-          ...prev,
-          location: next,
-        }));
+        setFormData((prev) => ({ ...prev, location: next }));
         setMessage("현재 위치를 불러왔습니다.");
       },
       () => setMessage("위치 권한을 허용해 주세요."),
@@ -762,12 +773,10 @@ export default function TrashMap() {
   const handleImageChange = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       setMessage("이미지 파일만 올릴 수 있습니다.");
       return;
     }
-
     try {
       const compressed = await compressImage(file);
       setFormData((prev) => ({ ...prev, image: compressed }));
@@ -782,12 +791,10 @@ export default function TrashMap() {
       setMessage("학번-이름이 필요합니다.");
       return;
     }
-
     if (!user) {
       setMessage("로그인 연결 중입니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
-
     if (!formData.location) {
       setMessage("작은 지도에서 위치를 한 번 눌러 주세요.");
       return;
@@ -807,13 +814,11 @@ export default function TrashMap() {
         setMessage("수정할 기록을 찾을 수 없습니다.");
         return;
       }
-
       const isOwner = !!user && target.uid === user.uid;
       if (!isAdmin && !isOwner) {
         setMessage("수정 권한이 없습니다.");
         return;
       }
-
       try {
         await update(ref(db, `${REPORTS_PATH}/${editingReportId}`), {
           ...payload,
@@ -860,7 +865,6 @@ export default function TrashMap() {
   const handleDelete = async (id: string) => {
     const ok = window.confirm("이 기록을 삭제할까요?");
     if (!ok) return;
-
     try {
       await remove(ref(db, `${REPORTS_PATH}/${id}`));
       setMessage("삭제되었습니다.");
@@ -871,11 +875,8 @@ export default function TrashMap() {
 
   const handleToggleStatus = async (report: any) => {
     const nextStatus = report.status === "pending" ? "solved" : "pending";
-
     try {
-      await update(ref(db, `${REPORTS_PATH}/${report.id}`), {
-        status: nextStatus,
-      });
+      await update(ref(db, `${REPORTS_PATH}/${report.id}`), { status: nextStatus });
       setMessage(nextStatus === "solved" ? "해결됨으로 변경되었습니다." : "진행중으로 변경되었습니다.");
     } catch {
       setMessage("상태 변경에 실패했습니다.");
@@ -885,7 +886,6 @@ export default function TrashMap() {
   const handleClearAll = async () => {
     const ok = window.confirm("전체 데이터를 삭제할까요?");
     if (!ok) return;
-
     try {
       await remove(ref(db, REPORTS_PATH));
       setMessage("전체 데이터가 초기화되었습니다.");
@@ -899,10 +899,8 @@ export default function TrashMap() {
       <div style={styles.joinScreen}>
         <style>{globalCss}</style>
         {message ? <div style={styles.toast}>{message}</div> : null}
-
         <div style={styles.joinWrap}>
           <ProjectBadge />
-
           <div style={styles.heroBrand}>
             <DaisyLogo size={76} animated />
             <div style={styles.heroTitleBlock}>
@@ -910,17 +908,13 @@ export default function TrashMap() {
               <div style={styles.projectSubTitle}>데이지 프로젝트</div>
             </div>
           </div>
-
           <div style={{ marginTop: 10, marginBottom: 10 }}>
             <DaisyMeaningLine />
           </div>
-
           <div style={styles.joinGuide}>실시간 지도에 합류해 우리 동네를 함께 기록해요</div>
-
           <div style={styles.joinCard}>
             <div style={styles.joinCardTitle}>반가워요 활동가님!</div>
             <div style={styles.joinCardSub}>학번과 이름을 입력해 주세요.</div>
-
             <form onSubmit={handleJoin}>
               <input
                 value={nicknameInput}
@@ -949,53 +943,30 @@ export default function TrashMap() {
     <div style={styles.appShell}>
       <style>{globalCss}</style>
       {message ? <div style={styles.toast}>{message}</div> : null}
-
       <Header nickname={nickname} isAdmin={isAdmin} onLogout={handleLogout} />
-
       <main style={styles.mainArea}>
         {activeTab === "map" && (
           <div style={styles.mapPage}>
             <div style={styles.fullMapWrap}>
-              <MapContainer
-                key={`main-map-${activeTab}`}
-                center={DEFAULT_CENTER}
-                zoom={14}
-                style={styles.mapContainer}
-                preferCanvas={true}
-              >
-                <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+              <MapContainer key={`main-map-${activeTab}`} center={DEFAULT_CENTER} zoom={14} style={styles.mapContainer} preferCanvas={true}>
+                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <MapSizeFixer />
                 <CurrentLocationMarker currentLocation={currentLocation} />
                 <InitialMapFollow currentLocation={currentLocation} activeTab={activeTab} />
-
                 {reports.map((report) => (
-                  <Marker
-                    key={report.id}
-                    position={[report.location.lat, report.location.lng]}
-                    icon={makeMarkerIcon(report.category)}
-                  >
+                  <Marker key={report.id} position={[report.location.lat, report.location.lng]} icon={makeMarkerIcon(report.category)}>
                     <Popup>
                       <div style={{ minWidth: 160 }}>
-                        <div>
-                          <strong>
-                            {getCategory(report.category).icon} {getCategory(report.category).label}
-                          </strong>
-                        </div>
+                        <div><strong>{getCategory(report.category).icon} {getCategory(report.category).label}</strong></div>
                         <div style={{ marginTop: 6, fontSize: 13 }}>지역: {report.area}</div>
                         <div style={{ fontSize: 13 }}>작성자: {report.userName}</div>
-                        <div style={{ fontSize: 13 }}>
-                          상태: {report.status === "solved" ? "해결됨" : "진행중"}
-                        </div>
+                        <div style={{ fontSize: 13 }}>상태: {report.status === "solved" ? "해결됨" : "진행중"}</div>
                         <div style={{ marginTop: 6, fontSize: 13 }}>{report.description}</div>
                       </div>
                     </Popup>
                   </Marker>
                 ))}
               </MapContainer>
-
               <button
                 style={styles.recordFab}
                 onClick={() => {
@@ -1012,7 +983,6 @@ export default function TrashMap() {
         {activeTab === "list" && (
           <div style={styles.pageWrap}>
             <div style={styles.pageHeading}>TEAM ARCHIVE</div>
-
             {reports.length === 0 ? (
               <div style={styles.emptyFeed}>아직 활동 기록이 없습니다.</div>
             ) : (
@@ -1021,44 +991,25 @@ export default function TrashMap() {
                 const isOwner = !!user && report.uid === user.uid;
                 const canDelete = isAdmin || isOwner;
                 const canEdit = isAdmin || isOwner;
-
-                const statusButtonStyle =
-                  report.status === "solved" ? styles.statusSolved : styles.statusPending;
-
+                const statusButtonStyle = report.status === "solved" ? styles.statusSolved : styles.statusPending;
                 const statusLabel = report.status === "solved" ? "해결됨 ✓" : "진행중";
 
                 return (
                   <div key={report.id} style={styles.feedCard}>
                     <div style={styles.feedCardTop}>
-                      <div style={styles.areaBadge}>
-                        {cat.icon} {report.area}
-                      </div>
-
+                      <div style={styles.areaBadge}>{cat.icon} {report.area}</div>
                       <button onClick={() => handleToggleStatus(report)} style={statusButtonStyle}>
                         {statusLabel}
                       </button>
                     </div>
-
                     {report.image ? <img src={report.image} alt="record" style={styles.feedImage} /> : null}
-
                     <div style={styles.feedText}>{report.description || "내용 없음"}</div>
-
                     <div style={styles.feedFooter}>
                       <div style={styles.feedUser}>👤 {report.userName}</div>
-
                       {canEdit || canDelete ? (
                         <div style={styles.feedActions}>
-                          {canEdit ? (
-                            <button onClick={() => handleStartEdit(report)} style={styles.editButton}>
-                              수정
-                            </button>
-                          ) : null}
-
-                          {canDelete ? (
-                            <button onClick={() => handleDelete(report.id)} style={styles.deleteButton}>
-                              삭제
-                            </button>
-                          ) : null}
+                          {canEdit ? <button onClick={() => handleStartEdit(report)} style={styles.editButton}>수정</button> : null}
+                          {canDelete ? <button onClick={() => handleDelete(report.id)} style={styles.deleteButton}>삭제</button> : null}
                         </div>
                       ) : (
                         <div style={{ color: "#d8cfc5", fontSize: 11, fontWeight: 800 }}>읽기 전용</div>
@@ -1074,44 +1025,32 @@ export default function TrashMap() {
         {activeTab === "stats" && (
           <div style={styles.pageWrap}>
             <div style={styles.pageHeading}>ACTIVITY STATS</div>
-
             <div style={styles.totalBox}>
               <div style={styles.totalNumber}>{stats.total}</div>
               <div style={styles.totalLabel}>TOTAL TRASH FOUND</div>
             </div>
-
             <div style={styles.statRow}>
               <div style={styles.smallStatBox}>
                 <div style={styles.smallStatTitle}>SOLVED</div>
                 <div style={{ ...styles.smallStatNumber, color: GREEN }}>{stats.solved}</div>
               </div>
-
               <div style={styles.smallStatBox}>
                 <div style={styles.smallStatTitle}>REMAINING</div>
                 <div style={{ ...styles.smallStatNumber, color: NAVY }}>{stats.pending}</div>
               </div>
             </div>
-
             <div style={styles.categoryStatsWrap}>
               <div style={styles.categoryStatsTitle}>쓰레기 종류별 통계</div>
               <div style={styles.categoryStatsGrid}>
                 {stats.categoryCounts.map((item) => (
                   <div key={item.id} style={styles.categoryStatCard}>
-                    <div
-                      style={{
-                        ...styles.categoryStatIcon,
-                        background: item.color,
-                      }}
-                    >
-                      {item.icon}
-                    </div>
+                    <div style={{ ...styles.categoryStatIcon, background: item.color }}>{item.icon}</div>
                     <div style={styles.categoryStatLabel}>{item.label}</div>
                     <div style={styles.categoryStatCount}>{item.count}</div>
                   </div>
                 ))}
               </div>
             </div>
-
             {isAdmin && (
               <div style={styles.adminCard}>
                 <div style={styles.adminTitle}>⚠ ADMIN TOOLS</div>
@@ -1120,11 +1059,74 @@ export default function TrashMap() {
                   <br />
                   삭제된 데이터는 복구할 수 없습니다.
                 </div>
-                <button onClick={handleClearAll} style={styles.adminButton}>
-                  데이터 전체 초기화
-                </button>
+                <button onClick={handleClearAll} style={styles.adminButton}>데이터 전체 초기화</button>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === "activity" && (
+          <div style={styles.pageWrap}>
+            <div style={styles.pageHeading}>MY ACTIVITY</div>
+            <div style={styles.badgeHero}>
+              <div style={styles.badgeEmoji}>{activityData.badge.emoji}</div>
+              <div>
+                <div style={styles.badgeTitle}>{activityData.badge.title}</div>
+                <div style={styles.badgeDesc}>{activityData.badge.desc}</div>
+              </div>
+            </div>
+            <div style={styles.statRow}>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>MY RECORDS</div>
+                <div style={{ ...styles.smallStatNumber, color: GREEN }}>{activityData.myCount}</div>
+              </div>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>MY SOLVED</div>
+                <div style={{ ...styles.smallStatNumber, color: NAVY }}>{activityData.mySolved}</div>
+              </div>
+            </div>
+            <div style={styles.statRow}>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>TODAY</div>
+                <div style={{ ...styles.smallStatNumber, color: GREEN }}>{activityData.todayCount}</div>
+              </div>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>THIS WEEK</div>
+                <div style={{ ...styles.smallStatNumber, color: NAVY }}>{activityData.weekCount}</div>
+              </div>
+            </div>
+            <div style={styles.statRow}>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>ALL USERS</div>
+                <div style={{ ...styles.smallStatNumber, color: GREEN }}>{activityData.totalUsers}</div>
+              </div>
+              <div style={styles.smallStatBox}>
+                <div style={styles.smallStatTitle}>MY RANK</div>
+                <div style={{ ...styles.smallStatNumber, color: NAVY }}>{activityData.myRank ? `${activityData.myRank}위` : "-"}</div>
+              </div>
+            </div>
+            <div style={styles.rankingWrap}>
+              <div style={styles.rankingTitle}>전체 사용자 기록 랭킹</div>
+              {activityData.ranking.length === 0 ? (
+                <div style={styles.rankingEmpty}>아직 랭킹 데이터가 없습니다.</div>
+              ) : (
+                activityData.ranking.slice(0, 10).map((item, index) => (
+                  <div key={`${item.name}-${index}`} style={styles.rankingItem}>
+                    <div style={styles.rankingLeft}>
+                      <div style={styles.rankingIndex}>{index + 1}</div>
+                      <div>
+                        <div style={styles.rankingName}>{item.name}</div>
+                        <div style={styles.rankingBadge}>{item.badge.emoji} {item.badge.title}</div>
+                      </div>
+                    </div>
+                    <div style={styles.rankingRight}>
+                      <div style={styles.rankingCount}>{item.count}</div>
+                      <div style={styles.rankingLabel}>기록</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
       </main>
@@ -1149,10 +1151,7 @@ export default function TrashMap() {
 
             <div style={styles.miniMapWrap}>
               <MapContainer center={DEFAULT_CENTER} zoom={14} style={{ width: "100%", height: "100%" }}>
-                <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <MapSizeFixer />
                 <ClickLocationPicker
                   selectedLocation={formData.location}
@@ -1174,11 +1173,7 @@ export default function TrashMap() {
                 <div style={styles.actionCardLabelWhite}>내 위치 잡기</div>
               </button>
 
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                style={styles.actionCardLightButton}
-              >
+              <button type="button" onClick={() => fileInputRef.current?.click()} style={styles.actionCardLightButton}>
                 {formData.image ? (
                   <div style={styles.previewWrap}>
                     <img src={formData.image} alt="preview" style={styles.uploadPreview} />
@@ -1202,13 +1197,7 @@ export default function TrashMap() {
                 )}
               </button>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                style={{ display: "none" }}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
             </div>
 
             <select
@@ -1673,6 +1662,41 @@ const styles: any = {
     fontSize: 13,
     cursor: "pointer",
   },
+  badgeHero: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    background: "linear-gradient(135deg, #fffdf5 0%, #fff7dd 100%)",
+    border: `1px solid ${BORDER}`,
+    borderRadius: 26,
+    padding: "18px 16px",
+    boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+    marginBottom: 14,
+  },
+  badgeEmoji: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    background: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 26,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+    flexShrink: 0,
+  },
+  badgeTitle: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: 900,
+  },
+  badgeDesc: {
+    marginTop: 6,
+    color: LIGHT_TEXT,
+    fontSize: 13,
+    fontWeight: 700,
+    lineHeight: 1.5,
+  },
   totalBox: {
     background: NAVY,
     borderRadius: 40,
@@ -1777,6 +1801,86 @@ const styles: any = {
     fontWeight: 900,
     lineHeight: 1,
   },
+  rankingWrap: {
+    marginTop: 16,
+    background: "white",
+    borderRadius: 28,
+    padding: 16,
+    border: `1px solid ${BORDER}`,
+    boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
+  },
+  rankingTitle: {
+    color: NAVY,
+    fontSize: 18,
+    fontWeight: 900,
+    marginBottom: 12,
+  },
+  rankingEmpty: {
+    color: LIGHT_TEXT,
+    fontSize: 14,
+    fontWeight: 700,
+    textAlign: "center",
+    padding: "18px 0",
+  },
+  rankingItem: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    padding: "14px 8px",
+    borderBottom: "1px solid #f7ebd4",
+  },
+  rankingLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    minWidth: 0,
+  },
+  rankingIndex: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    background: "#fff8ea",
+    color: NAVY,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 900,
+    fontSize: 14,
+    flexShrink: 0,
+  },
+  rankingName: {
+    color: NAVY,
+    fontSize: 15,
+    fontWeight: 900,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: 180,
+  },
+  rankingBadge: {
+    marginTop: 4,
+    color: LIGHT_TEXT,
+    fontSize: 12,
+    fontWeight: 800,
+  },
+  rankingRight: {
+    textAlign: "right",
+    flexShrink: 0,
+  },
+  rankingCount: {
+    color: NAVY,
+    fontSize: 22,
+    fontWeight: 900,
+    lineHeight: 1,
+  },
+  rankingLabel: {
+    marginTop: 4,
+    color: LIGHT_TEXT,
+    fontSize: 11,
+    fontWeight: 900,
+    letterSpacing: "0.04em",
+  },
   adminCard: {
     background: "#fffdf8",
     borderRadius: 32,
@@ -1818,7 +1922,7 @@ const styles: any = {
     background: "white",
     borderTop: `1px solid ${BORDER}`,
     display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr",
     alignItems: "center",
     flexShrink: 0,
     paddingBottom: 4,
