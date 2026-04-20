@@ -34,8 +34,11 @@ const AREAS = ["물금읍", "증산리", "가촌리", "범어리", "기타"];
 const CATEGORIES = [
   { id: "cup", label: "일회용 컵", icon: "🥤", color: "#f4b321" },
   { id: "smoke", label: "담배꽁초", icon: "🚬", color: "#78350f" },
-  { id: "plastic", label: "플라스틱", icon: "🧴", color: "#3b82f6" },
   { id: "vinyl", label: "비닐", icon: "🛍️", color: "#06b6d4" },
+  { id: "plastic", label: "플라스틱", icon: "🧴", color: "#3b82f6" },
+  { id: "can", label: "캔", icon: "🥫", color: "#ef4444" },
+  { id: "glass", label: "유리", icon: "🍾", color: "#8b5cf6" },
+  { id: "paper", label: "종이류", icon: "📄", color: "#f97316" },
   { id: "bulky", label: "대형 폐기물", icon: "📦", color: "#4b5563" },
   { id: "etc", label: "기타 쓰레기", icon: "❓", color: "#9ca3af" },
 ];
